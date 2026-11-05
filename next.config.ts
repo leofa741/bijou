@@ -22,10 +22,9 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   
-  // ⚠️ COMENTA O ELIMINA ESTA LÍNEA PARA VERCEL:
-  // output: 'standalone', 
+  // ✅ ELIMINADO: output: 'standalone' (No es necesario en Vercel y causa conflictos)
 
-  // ✅ AGREGA TODAS LAS LIBRERÍAS NATIVAS QUE USAS EN NEXTAUTH:
+  // ✅ AGREGADAS: Las 3 librerías que tu NextAuth usa y que Vercel no debe empaquetar
   serverExternalPackages: ['jsonwebtoken', 'bcryptjs', 'nodemailer'],
 
   outputFileTracingIncludes: {
