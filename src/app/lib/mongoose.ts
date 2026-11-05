@@ -1,23 +1,52 @@
-// lib/mongoose.ts
+
 import mongoose from 'mongoose';
-import dotenv from 'dotenv';
 
+const MONGODB_URI = process.env.MONGODB_CNN;
 
-dotenv.config();
+if (!MONGODB_URI) {
+  throw new Error('Falta la variable de entorno MONGODB_CNN');
+}
 
-const connectDB = async () => {
-    try {
-     
-        if (!process.env.MONGODB_CNN) {
-          throw new Error('La variable de entorno MONGODB_CNN no está definida');
-        }
-        await mongoose.connect(process.env.MONGODB_CNN);
-        console.log('MongoDB conectado');
-      } catch (error) {
-        console.error('Error al conectar MongoDB:', error);
-        process.exit(1);
-      }
-      
-};
+interface MongooseCache {
+  conn: typeof mongoose | null;
+  promise: Promise<typeof mongoose> | null;
+}
+
+declare global {
+  // eslint-disable-next-line no-var
+  var mongooseCache: MongooseCache | undefined;
+}
+
+const cached: MongooseCache =
+  global.mongooseCache ?? {
+    conn: null,
+    promise: null,
+  };
+
+if (!global.mongooseCache) {
+  global.mongooseCache = cached;
+}
+
+async function connectDB() {
+  if (cached.conn) {
+    return cached.conn;
+  }
+
+  if (!cached.promise) {
+    cached.promise = mongoose.connect(MONGODB_URI!, {
+      bufferCommands: false,
+    });
+  }
+
+  try {
+    cached.conn = await cached.promise;
+  } catch (error) {
+    cached.promise = null;
+    console.error('Error conectando MongoDB:', error);
+    throw error;
+  }
+
+  return cached.conn;
+}
 
 export default connectDB;
