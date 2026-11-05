@@ -19,12 +19,12 @@ const withPWA = withPWAInit({
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-
   eslint: {
     ignoreDuringBuilds: true,
   },
-
   output: 'standalone',
+
+  serverExternalPackages: ['jsonwebtoken'],
 
   outputFileTracingIncludes: {
     '/*': [
@@ -35,10 +35,7 @@ const nextConfig: NextConfig = {
 
   images: {
     remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'res.cloudinary.com',
-      },
+      { protocol: 'https', hostname: 'res.cloudinary.com' },
     ],
   },
 };
