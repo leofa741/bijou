@@ -22,6 +22,10 @@ if (!process.env.NEXTAUTH_SECRET) throw new Error("❌ FALTA LA VARIABLE DE ENTO
 if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) throw new Error("❌ FALTAN VARIABLES DE ENTORNO: GOOGLE_CLIENT_ID o GOOGLE_CLIENT_SECRET");
 if (!process.env.JWT_SECRET) throw new Error("❌ FALTA LA VARIABLE DE ENTORNO: JWT_SECRET");
 
+console.log("✅ Variables de entorno críticas cargadas correctamente." , process.env.GOOGLE_CLIENT_ID ? "✅ GOOGLE_CLIENT_ID cargada" : "❌ GOOGLE_CLIENT_ID NO cargada");
+console.log("✅ Variables de entorno críticas cargadas correctamente." , process.env.GOOGLE_CLIENT_SECRET ? "✅ GOOGLE_CLIENT_SECRET cargada" : "❌ GOOGLE_CLIENT_SECRET NO cargada");
+console.log("✅ Variables de entorno críticas cargadas correctamente." , process.env.JWT_SECRET ? "✅ JWT_SECRET cargada" : "❌ JWT_SECRET NO cargada");
+
 connectDB();
 
 export interface DecodedToken {
