@@ -19,10 +19,20 @@ const withPWA = withPWAInit({
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+
   eslint: {
     ignoreDuringBuilds: true,
   },
+
   output: 'standalone',
+
+  outputFileTracingIncludes: {
+    '/*': [
+      './node_modules/pdfkit/js/standard-fonts/**/*',
+      './node_modules/pdfkit/js/data/**/*',
+    ],
+  },
+
   images: {
     remotePatterns: [
       {
