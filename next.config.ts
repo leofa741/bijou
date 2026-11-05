@@ -1,4 +1,3 @@
-
 import type { NextConfig } from 'next';
 import withPWAInit from '@ducanh2912/next-pwa';
 
@@ -22,9 +21,12 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  output: 'standalone',
+  
+  // ⚠️ COMENTA O ELIMINA ESTA LÍNEA PARA VERCEL:
+  // output: 'standalone', 
 
-  serverExternalPackages: ['jsonwebtoken'],
+  // ✅ AGREGA TODAS LAS LIBRERÍAS NATIVAS QUE USAS EN NEXTAUTH:
+  serverExternalPackages: ['jsonwebtoken', 'bcryptjs', 'nodemailer'],
 
   outputFileTracingIncludes: {
     '/*': [
