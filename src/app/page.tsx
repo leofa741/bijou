@@ -232,7 +232,7 @@ function PageContent() {
                   {/* ✅ CORRECCIÓN 2: Enlace correcto a tu página de catálogo */}
                   <Link href="/catalogo" className="group inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-rose-400 to-pink-500 text-white font-bold rounded-full shadow-lg shadow-rose-200/50 hover:shadow-xl hover:shadow-rose-300/60 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300">
                     <FaShoppingBag className="w-5 h-5" />
-                    Ver Catálogodddd
+                    Ver Catálogod
                     <FaArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </Link>
                   <a href={`https://wa.me/${siteConfig.whatsapp}?text=${encodeURIComponent(siteConfig.whatsappMessage)}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-white/80 backdrop-blur-md text-rose-700 font-bold rounded-full border border-rose-200 hover:bg-rose-50 hover:border-rose-300 hover:text-rose-800 transition-all duration-300 shadow-sm">

@@ -19,7 +19,7 @@ import { getWelcomeEmailTemplate } from './emails/templates/welcomeEmail';
 
 // 🚨 SALVAGUARDAS CRÍTICAS
 if (!process.env.NEXTAUTH_SECRET) throw new Error("❌ FALTA LA VARIABLE DE ENTORNO: NEXTAUTH_SECRET");
-if (!process.env.ID_GOOGLE || !process.env.GOOGLE_SECRET) throw new Error("❌ FALTAN VARIABLES DE ENTORNO: ID_GOOGLE o GOOGLE_SECRET");
+if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) throw new Error("❌ FALTAN VARIABLES DE ENTORNO: GOOGLE_CLIENT_ID o GOOGLE_CLIENT_SECRET");
 if (!process.env.JWT_SECRET) throw new Error("❌ FALTA LA VARIABLE DE ENTORNO: JWT_SECRET");
 
 connectDB();
@@ -168,8 +168,8 @@ async function sendEmail({ to, subject, html, text }: { to: string; subject: str
 export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
-      clientId: process.env.ID_GOOGLE as string,
-      clientSecret: process.env.GOOGLE_SECRET as string,
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     }),
     CredentialsProvider({
       name: 'Credentials',
@@ -423,7 +423,7 @@ export const authOptions: NextAuthOptions = {
     },
   },
 
- secret: process.env.NEXTAUTH_SECRET,
+ secret: process.env.NEXTAUTH_SECRET ,
 };
 
 // Helpers de admin
