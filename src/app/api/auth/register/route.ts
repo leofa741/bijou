@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import connectDB from '@/app/lib/mongoose';
 import User from '@/app/models/User';
 import Cliente from '@/app/models/Cliente'; // ✅ Importar modelo Cliente
-import bcrypt from 'bcryptjs';
+import bcrypt from 'bcrypt';
 
 connectDB();
 

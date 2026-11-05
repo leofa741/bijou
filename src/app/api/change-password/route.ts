@@ -1,7 +1,7 @@
 // app/api/change-password/route.ts
 import { NextResponse } from 'next/server';
 
-import bcrypt from 'bcryptjs'; // Para hashear la contraseña
+import bcrypt from 'bcrypt';
 import User from '@/app/models/User';
 
 export async function POST(request: Request) {

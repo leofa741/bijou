@@ -25,7 +25,7 @@ const nextConfig: NextConfig = {
   // ✅ ELIMINADO: output: 'standalone' (No es necesario en Vercel y causa conflictos)
 
   // ✅ AGREGADAS: Las 3 librerías que tu NextAuth usa y que Vercel no debe empaquetar
-  serverExternalPackages: ['jsonwebtoken', 'bcryptjs', 'nodemailer'],
+  serverExternalPackages: ['jsonwebtoken', 'bcrypt', 'nodemailer'],
 
   outputFileTracingIncludes: {
     '/*': [
