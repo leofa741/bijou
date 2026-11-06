@@ -7,7 +7,7 @@ import {
   FaPlus, FaMinus, FaTimes, FaCrown, FaRegStar 
 } from 'react-icons/fa';
 import { siteConfig } from '@/app/lib/config';
-import { useCartStore } from '@/store/useCartStore'; // 👈 CARRITO GLOBAL
+import { useCartStore } from '@/store/useCartStore';
 
 interface Product {
   _id: string;
@@ -29,7 +29,6 @@ export default function CategoriaPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // 👈 CARRITO GLOBAL (persiste entre páginas)
   const { cart, isCartOpen, setIsCartOpen, addToCart, updateQuantity } = useCartStore();
 
   useEffect(() => {
@@ -84,7 +83,6 @@ export default function CategoriaPage() {
 
   return (
     <div className="relative min-h-screen bg-[#FAF7F2] text-[#3D2B1F] selection:bg-[#D4B5D4] selection:text-[#3D2B1F] pb-24">
-      
       <div className="fixed inset-0 pointer-events-none opacity-[0.015]" 
            style={{backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`}} />
       
@@ -95,7 +93,6 @@ export default function CategoriaPage() {
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         
-        {/* Header de la Categoría */}
         <div className="mb-12 mt-20 sm:mt-32">
           <button onClick={() => router.push('/catalogo')} className="inline-flex items-center gap-2 text-[#8B6F47] hover:text-[#3D2B1F] transition-colors mb-4 font-medium">
             <FaArrowLeft className="w-4 h-4" /> Volver al catálogo
@@ -106,7 +103,6 @@ export default function CategoriaPage() {
           <div className="w-16 h-px bg-[#C9A961] mt-4" />
         </div>
 
-        {/* Grilla de Productos */}
         {products.length === 0 ? (
           <div className="text-center py-24 bg-white rounded-[2rem] border border-[#E8DFD0]/60 shadow-[0_10px_40px_rgba(139,115,85,0.04)]">
             <FaLeaf className="w-12 h-12 text-[#D4B5D4] mx-auto mb-4" />
@@ -127,7 +123,7 @@ export default function CategoriaPage() {
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-[#3D2B1F]/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                   
-                  <div className="absolute top-4 left-4 flex flex-col gap-2">
+                  <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
                     {product.destacado && (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/95 backdrop-blur-md text-[#8B6F47] text-[9px] font-bold uppercase tracking-[0.2em] shadow-sm border border-[#E8DFD0]">
                         <FaCrown className="w-2.5 h-2.5 text-[#C9A961]" /> Exclusiva
@@ -140,14 +136,25 @@ export default function CategoriaPage() {
                     )}
                   </div>
                   
-                  <div className="absolute bottom-0 left-0 right-0 p-5 translate-y-full group-hover:translate-y-0 transition-transform duration-700 ease-out">
-                    <button 
-                      onClick={() => addToCart(product)}
-                      className="w-full py-3.5 rounded-xl bg-[#3D2B1F] text-[#FAF7F2] font-medium text-sm tracking-wide hover:bg-[#2A1D14] transition-all duration-500 shadow-lg border border-transparent hover:border-[#C9A961]/30 flex items-center justify-center gap-2"
-                    >
+                  {/* ✅ BOTÓN AGREGAR: Optimizado para Móvil y Desktop */}
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      addToCart(product);
+                    }}
+                    className="absolute bottom-4 right-4 sm:bottom-5 sm:left-0 sm:right-0 sm:p-5 sm:translate-y-full sm:group-hover:translate-y-0 transition-all duration-500 ease-out z-20"
+                    aria-label="Agregar al carrito"
+                  >
+                    {/* Versión Móvil: Botón redondo flotante */}
+                    <div className="sm:hidden w-11 h-11 rounded-full bg-[#3D2B1F] text-[#FAF7F2] flex items-center justify-center shadow-lg active:scale-90 transition-transform border border-[#C9A961]/20">
+                      <FaPlus className="w-4 h-4" />
+                    </div>
+                    
+                    {/* Versión Desktop: Botón ancho que sube con hover */}
+                    <div className="hidden sm:flex w-full py-3.5 rounded-xl bg-[#3D2B1F] text-[#FAF7F2] font-medium text-sm tracking-wide hover:bg-[#2A1D14] transition-all duration-500 shadow-lg border border-transparent hover:border-[#C9A961]/30 items-center justify-center gap-2">
                       <FaPlus className="w-3 h-3" /> Agregar a la Selección
-                    </button>
-                  </div>
+                    </div>
+                  </button>
                 </div>
 
                 <div className="p-6 flex flex-col flex-1">

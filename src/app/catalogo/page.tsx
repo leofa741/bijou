@@ -6,7 +6,7 @@ import {
   FaGem, FaLeaf, FaChevronLeft, FaChevronRight, FaCrown, FaRegStar 
 } from 'react-icons/fa';
 import { siteConfig } from '@/app/lib/config';
-import { useCartStore } from '@/store/useCartStore'; // 👈 CARRITO GLOBAL
+import { useCartStore } from '@/store/useCartStore';
 
 interface Product {
   _id: string;
@@ -28,18 +28,14 @@ export default function CatalogoPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  // 👈 CARRITO GLOBAL (persiste entre páginas)
   const { cart, isCartOpen, setIsCartOpen, addToCart, updateQuantity } = useCartStore();
-
   const WHATSAPP_NUMBER = siteConfig.whatsapp;
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`/api/public/productos?page=${currentPage}&limit=12&categoria=${filterCategory}`, {
-          cache: 'no-store'
-        });
+        const res = await fetch(`/api/public/productos?page=${currentPage}&limit=12&categoria=${filterCategory}`, { cache: 'no-store' });
         const data = await res.json();
         if (data.success) {
           setProducts(data.productos);
@@ -53,11 +49,7 @@ export default function CatalogoPage() {
     };
     
     fetchProducts();
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') fetchProducts();
-    };
-
+    const handleVisibilityChange = () => { if (document.visibilityState === 'visible') fetchProducts(); };
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [currentPage, filterCategory]);
@@ -67,14 +59,9 @@ export default function CatalogoPage() {
 
   const handleSendWhatsApp = () => {
     if (cart.length === 0) return;
-
     let message = `¡Hola! Me gustaría consultar por las siguientes piezas artesanales de *${siteConfig.companyName}*:\n\n`;
-    cart.forEach(item => {
-      message += `▪️ ${item.quantity}x ${item.nombre} - ${formatPrice(item.precioFinal * item.quantity)}\n`;
-    });
-    message += `\n💰 *Total estimado: ${formatPrice(cartTotal)}*\n\n`;
-    message += `¿Podrías confirmarme disponibilidad y los detalles para finalizar mi pedido? ¡Muchas gracias!`;
-
+    cart.forEach(item => { message += `▪️ ${item.quantity}x ${item.nombre} - ${formatPrice(item.precioFinal * item.quantity)}\n`; });
+    message += `\n💰 *Total estimado: ${formatPrice(cartTotal)}*\n\n¿Podrías confirmarme disponibilidad y los detalles para finalizar mi pedido? ¡Muchas gracias!`;
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
   };
 
@@ -83,11 +70,7 @@ export default function CatalogoPage() {
     return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(amount);
   };
 
-  const handleCategoryChange = (cat: string) => {
-    setFilterCategory(cat);
-    setCurrentPage(1);
-  };
-
+  const handleCategoryChange = (cat: string) => { setFilterCategory(cat); setCurrentPage(1); };
   const categories = ['todas', ...Array.from(new Set(products.map(p => p.categoria)))];
 
   if (loading) {
@@ -103,17 +86,14 @@ export default function CatalogoPage() {
 
   return (
     <div className="relative min-h-screen bg-[#FAF7F2] text-[#3D2B1F] selection:bg-[#D4B5D4] selection:text-[#3D2B1F] pb-24">
-      
       <div className="fixed inset-0 pointer-events-none opacity-[0.015]" 
            style={{backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`}} />
-      
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 right-0 w-96 h-96 bg-[#D4B5D4]/20 rounded-full blur-[120px]" />
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#C9A961]/10 rounded-full blur-[120px]" />
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        
         <div className="text-center mt-40 mb-36">
           <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white border border-[#E8DFD0]/60 shadow-sm mb-6">
             <FaLeaf className="text-[#8B6F47] w-3.5 h-3.5" />
@@ -127,16 +107,11 @@ export default function CatalogoPage() {
           </p>
         </div>
 
-        {/* Filtros de Categoría */}
         <div className="flex flex-wrap justify-center gap-3 mb-16">
           {categories.map(cat => (
-            <button
-              key={cat}
-              onClick={() => handleCategoryChange(cat)}
+            <button key={cat} onClick={() => handleCategoryChange(cat)}
               className={`px-6 py-3 rounded-full text-xs font-semibold uppercase tracking-[0.15em] transition-all duration-500 ${
-                filterCategory === cat
-                  ? 'bg-[#3D2B1F] text-[#FAF7F2] shadow-[0_8px_20px_rgba(61,43,31,0.15)]'
-                  : 'bg-white text-[#6B5B4F] border border-[#E8DFD0] hover:border-[#C9A961] hover:text-[#3D2B1F]'
+                filterCategory === cat ? 'bg-[#3D2B1F] text-[#FAF7F2] shadow-[0_8px_20px_rgba(61,43,31,0.15)]' : 'bg-white text-[#6B5B4F] border border-[#E8DFD0] hover:border-[#C9A961] hover:text-[#3D2B1F]'
               }`}
             >
               {cat}
@@ -144,7 +119,6 @@ export default function CatalogoPage() {
           ))}
         </div>
 
-        {/* Grilla de Productos */}
         {products.length === 0 ? (
           <div className="text-center py-24 bg-white rounded-[2rem] border border-[#E8DFD0]/60 shadow-[0_10px_40px_rgba(139,115,85,0.04)]">
             <FaLeaf className="w-12 h-12 text-[#D4B5D4] mx-auto mb-4" />
@@ -166,7 +140,7 @@ export default function CatalogoPage() {
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-[#3D2B1F]/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                     
-                    <div className="absolute top-4 left-4 flex flex-col gap-2">
+                    <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
                       {product.destacado && (
                         <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/95 backdrop-blur-md text-[#8B6F47] text-[9px] font-bold uppercase tracking-[0.2em] shadow-sm border border-[#E8DFD0]">
                           <FaCrown className="w-2.5 h-2.5 text-[#C9A961]" /> Exclusiva
@@ -179,14 +153,19 @@ export default function CatalogoPage() {
                       )}
                     </div>
                     
-                    <div className="absolute bottom-0 left-0 right-0 p-5 translate-y-full group-hover:translate-y-0 transition-transform duration-700 ease-out">
-                      <button 
-                        onClick={() => addToCart(product)}
-                        className="w-full py-3.5 rounded-xl bg-[#3D2B1F] text-[#FAF7F2] font-medium text-sm tracking-wide hover:bg-[#2A1D14] transition-all duration-500 shadow-lg border border-transparent hover:border-[#C9A961]/30 flex items-center justify-center gap-2"
-                      >
+                    {/* ✅ BOTÓN AGREGAR: Optimizado para Móvil y Desktop */}
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); addToCart(product); }}
+                      className="absolute bottom-4 right-4 sm:bottom-5 sm:left-0 sm:right-0 sm:p-5 sm:translate-y-full sm:group-hover:translate-y-0 transition-all duration-500 ease-out z-20"
+                      aria-label="Agregar al carrito"
+                    >
+                      <div className="sm:hidden w-11 h-11 rounded-full bg-[#3D2B1F] text-[#FAF7F2] flex items-center justify-center shadow-lg active:scale-90 transition-transform border border-[#C9A961]/20">
+                        <FaPlus className="w-4 h-4" />
+                      </div>
+                      <div className="hidden sm:flex w-full py-3.5 rounded-xl bg-[#3D2B1F] text-[#FAF7F2] font-medium text-sm tracking-wide hover:bg-[#2A1D14] transition-all duration-500 shadow-lg border border-transparent hover:border-[#C9A961]/30 items-center justify-center gap-2">
                         <FaPlus className="w-3 h-3" /> Agregar a la Selección
-                      </button>
-                    </div>
+                      </div>
+                    </button>
                   </div>
 
                   <div className="p-6 flex flex-col flex-1">
@@ -200,7 +179,6 @@ export default function CatalogoPage() {
                     <p className="text-[#6B5B4F] text-sm mb-4 line-clamp-2 flex-1 font-extralight leading-relaxed">
                       {product.descripcion}
                     </p>
-                    
                     <div className="flex items-center justify-between mt-auto pt-4 border-t border-[#E8DFD0]/60">
                       <span className="text-[#3D2B1F] font-serif font-semibold text-xl tracking-tight">
                         {formatPrice(product.precioFinal)}
@@ -212,38 +190,23 @@ export default function CatalogoPage() {
               ))}
             </div>
 
-            {/* CONTROLES DE PAGINACIÓN */}
             {totalPages > 1 && (
               <div className="flex justify-center items-center gap-3 mt-20">
-                <button
-                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                  disabled={currentPage === 1}
-                  className="p-3 rounded-xl bg-white border border-[#E8DFD0] text-[#6B5B4F] disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#C9A961] hover:text-[#3D2B1F] transition-all duration-500"
-                >
+                <button onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))} disabled={currentPage === 1} className="p-3 rounded-xl bg-white border border-[#E8DFD0] text-[#6B5B4F] disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#C9A961] hover:text-[#3D2B1F] transition-all duration-500">
                   <FaChevronLeft className="w-4 h-4" />
                 </button>
-                
                 <div className="flex items-center gap-2">
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                    <button
-                      key={page}
-                      onClick={() => setCurrentPage(page)}
+                    <button key={page} onClick={() => setCurrentPage(page)}
                       className={`w-10 h-10 rounded-xl font-medium text-sm transition-all duration-500 ${
-                        currentPage === page
-                          ? 'bg-[#3D2B1F] text-[#FAF7F2] shadow-[0_8px_20px_rgba(61,43,31,0.15)]'
-                          : 'bg-white border border-[#E8DFD0] text-[#6B5B4F] hover:border-[#C9A961] hover:text-[#3D2B1F]'
+                        currentPage === page ? 'bg-[#3D2B1F] text-[#FAF7F2] shadow-[0_8px_20px_rgba(61,43,31,0.15)]' : 'bg-white border border-[#E8DFD0] text-[#6B5B4F] hover:border-[#C9A961] hover:text-[#3D2B1F]'
                       }`}
                     >
                       {page}
                     </button>
                   ))}
                 </div>
-
-                <button
-                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                  disabled={currentPage === totalPages}
-                  className="p-3 rounded-xl bg-white border border-[#E8DFD0] text-[#6B5B4F] disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#C9A961] hover:text-[#3D2B1F] transition-all duration-500"
-                >
+                <button onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))} disabled={currentPage === totalPages} className="p-3 rounded-xl bg-white border border-[#E8DFD0] text-[#6B5B4F] disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#C9A961] hover:text-[#3D2B1F] transition-all duration-500">
                   <FaChevronRight className="w-4 h-4" />
                 </button>
               </div>
@@ -252,12 +215,8 @@ export default function CatalogoPage() {
         )}
       </div>
 
-      {/* Botón Flotante del Carrito */}
       {cartCount > 0 && (
-        <button 
-          onClick={() => setIsCartOpen(true)}
-          className="fixed bottom-6 right-6 z-40 flex items-center gap-3 px-6 py-4 rounded-full bg-[#3D2B1F] text-[#FAF7F2] font-medium shadow-[0_15px_35px_rgba(61,43,31,0.25)] hover:bg-[#2A1D14] hover:scale-[1.02] active:scale-[0.98] transition-all duration-500 tracking-wide"
-        >
+        <button onClick={() => setIsCartOpen(true)} className="fixed bottom-6 right-6 z-40 flex items-center gap-3 px-6 py-4 rounded-full bg-[#3D2B1F] text-[#FAF7F2] font-medium shadow-[0_15px_35px_rgba(61,43,31,0.25)] hover:bg-[#2A1D14] hover:scale-[1.02] active:scale-[0.98] transition-all duration-500 tracking-wide">
           <div className="relative">
             <FaShoppingBag className="text-lg" />
             <span className="absolute -top-2 -right-2 w-5 h-5 bg-[#C9A961] text-[#3D2B1F] text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-[#FAF7F2]">
@@ -268,7 +227,6 @@ export default function CatalogoPage() {
         </button>
       )}
 
-      {/* Drawer del Carrito */}
       {isCartOpen && (
         <div className="fixed inset-0 z-50 flex justify-end">
           <div className="absolute inset-0 bg-[#3D2B1F]/40 backdrop-blur-sm" onClick={() => setIsCartOpen(false)} />
@@ -330,10 +288,7 @@ export default function CatalogoPage() {
                 <p className="text-[11px] text-[#8B6F47] text-center leading-relaxed font-light">
                   * Al ser piezas artesanales, el precio final puede variar levemente según personalizaciones específicas.
                 </p>
-                <button 
-                  onClick={handleSendWhatsApp}
-                  className="w-full flex items-center justify-center gap-3 py-4 rounded-xl bg-[#047857] text-white font-medium text-sm shadow-[0_10px_25px_rgba(4,120,87,0.2)] hover:bg-[#065F46] hover:shadow-[0_15px_35px_rgba(4,120,87,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-500 tracking-wide"
-                >
+                <button onClick={handleSendWhatsApp} className="w-full flex items-center justify-center gap-3 py-4 rounded-xl bg-[#047857] text-white font-medium text-sm shadow-[0_10px_25px_rgba(4,120,87,0.2)] hover:bg-[#065F46] hover:shadow-[0_15px_35px_rgba(4,120,87,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-500 tracking-wide">
                   <FaWhatsapp className="w-5 h-5" />
                   Consultar Pedido por WhatsApp
                 </button>
