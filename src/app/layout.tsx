@@ -36,32 +36,30 @@ const montserrat = Montserrat({
 
 // En src/app/layout.tsx
 
-export const metadata = {
-  title: 'Pretty Witches | Productos Personalizados',
-  description: 'Productos personalizados con amor para hacer tus celebraciones inolvidables.',
+
+
+
+
+
+export const metadata: Metadata = {
+  title: 'Pretty Witches',
+  description: 'Productos personalizados con amor para hacer tus celebraciones inolvidables. Sublimación, decoración y detalles únicos en 3D.',
+  keywords: ['Pretty Witches', 'productos personalizados', 'sublimación', 'decoración', 'detalles únicos', 'regalos personalizados'],
+  authors: [{ name: 'Pretty Witches', url: 'https://www.prettywitches.com.ar' }],
+  creator: 'Pretty Witches',
+  publisher: 'Pretty Witches',
+  applicationName: 'Pretty Witches',
+  colorScheme: 'dark', 
   manifest: '/manifest.json',
-  themeColor: '#3D2B1F', // Color de la barra del navegador en móvil
-  icons: {
-    icon: '/favicon.ico', // Tu favicon normal
-    apple: '/icons/apple-touch-icon.png', // Ícono para iPhone (180x180px)
-  },
-  openGraph: {
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
     title: 'Pretty Witches',
-    description: 'Productos personalizados para hacer tus momentos únicos',
-    url: 'https://www.prettywitches.com.ar',
-    siteName: 'Pretty Witches',
-    images: [
-      {
-        url: '/og-image.jpg', // Ver Paso 4
-        width: 1200,
-        height: 630,
-        alt: 'Pretty Witches - Productos Personalizados',
-      },
-    ],
-    locale: 'es_AR',
-    type: 'website',
   },
-}
+  formatDetection: {
+    telephone: false,
+  },
+};
 
 export const viewport: Viewport = {
   themeColor: '#F472B6',
