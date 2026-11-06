@@ -43,8 +43,8 @@ const montserrat = Montserrat({
 
 export const metadata: Metadata = {
   title: 'Pretty Witches',
-  description: 'Productos personalizados con amor para hacer tus celebraciones inolvidables. Sublimación, decoración y detalles únicos en 3D.',
-  keywords: ['Pretty Witches', 'productos personalizados', 'sublimación', 'decoración', 'detalles únicos', 'regalos personalizados'],
+  description: 'En Pretty Witches creemos que lo que llevas puesto debe resonar con quien sos. Por eso, creamos cada pieza de bijouterie y macramé no solo por su estética, sino por la intención y la energía que le ponemos al hacerla realidad.',
+  keywords: ['bijouterie', 'macramé', 'productos personalizados', 'regalos artesanales', 'Pretty Witches', 'accesorios únicos'] ,
   authors: [{ name: 'Pretty Witches', url: 'https://www.prettywitches.com.ar' }],
   creator: 'Pretty Witches',
   publisher: 'Pretty Witches',
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#F472B6',
+  themeColor: '#3D2B1F',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,

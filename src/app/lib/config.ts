@@ -6,7 +6,7 @@ export const siteConfig = {
   companyUrl : 'www.prettywitches.com.ar',
   compareUrl : 'https://www.prettywitches.com.ar',
   companyName: 'Pretty Witches',
-  description: 'Productos personalizados con amor para hacer tus celebraciones inolvidables. Sublimación, decoración y detalles únicos en 3D.',
+  description: 'En Pretty Witches creemos que lo que llevas puesto debe resonar con quien sos. Por eso, creamos cada pieza de bijouterie y macramé no solo por su estética, sino por la intención y la energía que le ponemos al hacerla realidad.',
   
   // 📞 Contacto
   whatsapp: '5491132835127',
