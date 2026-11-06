@@ -9,7 +9,7 @@ export const siteConfig = {
   description: 'Productos personalizados con amor para hacer tus celebraciones inolvidables. Sublimación, decoración y detalles únicos en 3D.',
   
   // 📞 Contacto
-  whatsapp: '5491137929744',
+  whatsapp: '5491132835127',
   whatsappMessage: 'Hola, me interesa consultar por un producto personalizado',
   email: 'hola.prettywitches@gmail.com',
   address: 'Buenos Aires, Argentina',
@@ -24,7 +24,7 @@ export const siteConfig = {
 
   // 🌐 Redes Sociales
   socials: {
-    instagram: 'https://instagram.com/pretty.witches', // Pon el usuario real
+    instagram: 'https://instagram.com/pretty.witches_', // Pon el usuario real
     facebook: 'https://facebook.com/pretty.witches',
     tiktok: 'https://tiktok.com/@pretty.witches',
   },

@@ -93,7 +93,7 @@ export default function CategoriaPage() {
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         
-        <div className="mb-12 mt-20 sm:mt-32">
+        <div className="mb-12 mt-50 sm:mt-32">
           <button onClick={() => router.push('/catalogo')} className="inline-flex items-center gap-2 text-[#8B6F47] hover:text-[#3D2B1F] transition-colors mb-4 font-medium">
             <FaArrowLeft className="w-4 h-4" /> Volver al catálogo
           </button>
