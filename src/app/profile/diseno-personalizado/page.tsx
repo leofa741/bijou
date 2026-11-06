@@ -61,24 +61,36 @@ export default function MisDisenosPage() {
     }
   }, [status, router]);
 
-  const fetchDisenos = async () => {
+    const fetchDisenos = async () => {
     try {
+      console.log("🔑 Token enviado:", session?.user?.token); // <-- AGREGA ESTO
+      
       const res = await fetch('/api/gestion/diseno-personalizado', {
         headers: { 'Authorization': `Bearer ${session?.user?.token}` }
       });
       
-      // 🔒 Seguridad extra: si el token expiró, redirigir al login
+      console.log("📡 Respuesta de la API:", res.status); // <-- AGREGA ESTO
+
       if (res.status === 401) {
+        console.warn("⚠️ Token expirado o inválido, redirigiendo al login...");
         router.push('/login');
         return;
+      }
+      
+      if (res.status === 403) {
+        console.error("🚫 ACCESO DENEGADO: Tu rol no tiene permiso en el Backend.");
+        // Aquí podrías mostrar un mensaje en pantalla en lugar de redirigir
+        return; 
       }
 
       const data = await res.json();
       if (data.success) {
         setDisenos(data.disenos);
+      } else {
+        console.error("❌ Error en datos:", data);
       }
     } catch (error) {
-      console.error('Error al cargar diseños:', error);
+      console.error('❌ Error al cargar diseños:', error);
     } finally {
       setLoading(false);
     }

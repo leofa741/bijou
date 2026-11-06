@@ -14,6 +14,8 @@ import {
     FaPalette
 } from 'react-icons/fa';
 import Loader from '@/app/components/loading/Loader'; // Ajusta la ruta si es necesario
+import { siteConfig } from '../lib/config';
+
 
 // Módulos disponibles (Actualizados para Candy Ilusiones)
 const modules = [
@@ -205,7 +207,7 @@ export default function GestionPage() {
                 {/* 📌 Footer informativo */}
                 <footer className="mt-16 text-center">
                     <p className="text-stone-400 text-[10px] tracking-[0.25em] uppercase font-medium">
-                        Candy Ilusiones • Sistema de Gestión Integral • {new Date().getFullYear()}
+                        {siteConfig.companyName} • Sistema de Gestión Integral • {new Date().getFullYear()}
                     </p>
                 </footer>
             </div>

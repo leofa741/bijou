@@ -1,6 +1,4 @@
-import { Schema, model, models } from 'mongoose';
-
-
+import { Schema, model, models, Document } from 'mongoose';
 
 export interface IDisenoPersonalizado extends Document {
   cliente: Schema.Types.ObjectId;
@@ -26,8 +24,6 @@ export interface IDisenoPersonalizado extends Document {
   updatedAt: Date;
 }
 
-
-
 const MensajeSchema = new Schema({
   autor: { type: String, required: true }, // 'cliente' o 'admin'
   nombreAutor: { type: String, required: true },
@@ -50,11 +46,28 @@ const DisenoPersonalizadoSchema = new Schema({
 
   // 🎨 Detalles del diseño
   titulo: { type: String, required: true, trim: true },
+  
+  // ✅ ACTUALIZADO: Nuevos valores para bijouterie y macramé + antiguos para compatibilidad
   tipoProducto: { 
     type: String, 
     required: true,
-    enum: ['taza', 'remera', 'llavero_3d', 'figura_3d', 'sublimacion', 'candy', 'decoracion', 'otro']
+    enum: [
+      'collar_piedras',
+      'pulsera_macrame',
+      'aros_colgantes',
+      'decoracion_pared',
+      'set_regalo',
+      'taza', 
+      'remera', 
+      'llavero_3d', 
+      'figura_3d', 
+      'sublimacion', 
+      'candy', 
+      'decoracion', 
+      'otro'
+    ]
   },
+  
   descripcion: { type: String, required: true },
   colores: { type: String },
   textoDeseado: { type: String },
@@ -101,8 +114,6 @@ const DisenoPersonalizadoSchema = new Schema({
 // Índices para búsquedas eficientes
 DisenoPersonalizadoSchema.index({ cliente: 1, createdAt: -1 });
 DisenoPersonalizadoSchema.index({ estado: 1 });
-
-// ... (tu esquema MensajeSchema y DisenoPersonalizadoSchema se mantienen igual) ...
 
 const DisenoPersonalizado = models.DisenoPersonalizado || model<IDisenoPersonalizado>('DisenoPersonalizado', DisenoPersonalizadoSchema);
 export default DisenoPersonalizado;

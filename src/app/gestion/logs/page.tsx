@@ -7,6 +7,7 @@ import LogModel from "@/app/models/LogLogin";
 import FilterForm from './app/gestion/logins/components/FilterForm';
 import { FaArrowLeft } from 'react-icons/fa';
 import Link from 'next/link';
+import { siteConfig } from '@/app/lib/config'; // Asegúrate de que esta ruta sea correcta   
 // Nota: Asegúrate de que esta ruta de importación sea correcta en tu estructura de carpetas
 
 
@@ -345,7 +346,7 @@ export default async function LoginsPage({
                 {/* 📌 Footer informativo */}
                 <footer className="mt-16 text-center">
                     <p className={`${theme.textSecondary} text-[10px] tracking-[0.25em] uppercase font-medium`}>
-                        Bitácora de Seguridad • Logs en tiempo real • Candy Ilusiones © {new Date().getFullYear()}
+                        Bitácora de Seguridad • Logs en tiempo real • {siteConfig.companyName} © {new Date().getFullYear()}
                     </p>
                 </footer>
             </div>

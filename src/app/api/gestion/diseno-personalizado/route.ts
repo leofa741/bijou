@@ -4,7 +4,6 @@ import connectDB from '@/app/lib/mongoose';
 import DisenoPersonalizadoModel from '@/app/models/DisenoPersonalizado';
 import UserModel from '@/app/models/User';
 
-// ✅ IMPORTAMOS EL TRANSPORTE Y LA PLANTILLA (Mismo patrón que en productos)
 import { emailTransporter } from '@/app/lib/emails/transporter';
 import { getNewDesignRequestAlertTemplate } from '@/app/lib/emails/templates/newDesignRequestAlert';
 import { siteConfig } from '@/app/lib/config';
@@ -12,8 +11,9 @@ import { siteConfig } from '@/app/lib/config';
 // ✅ POST: Cliente crea una nueva solicitud de diseño
 export async function POST(req: NextRequest) {
   try {
-    const token = await getToken({ req, secret: process.env.JWT_SECRET });
-    if (!token) {
+    // 🔑 CORRECCIÓN: Quitar el 'secret' forzado. getToken usará NEXTAUTH_SECRET automáticamente
+    const token = await getToken({ req });
+    if (!token || !token.id) {
       return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
     }
 
@@ -61,14 +61,13 @@ export async function POST(req: NextRequest) {
     });
 
     // 🚀 ENVIAR ALERTA POR EMAIL A ADMINS Y SUPERADMINS 
-  
     try {
       const admins = await UserModel.find({ 
         role: { $in: ['admin', 'superadmin'] } 
       }).select('email name');
 
       if (admins.length > 0) {
-        const adminPanelUrl =  process.env.NEXT_APP_URL || siteConfig.compareUrl;
+        const adminPanelUrl = process.env.NEXT_APP_URL || siteConfig.compareUrl || 'http://localhost:3000';
         const productTypeLabel = tipoProducto.replace('_', ' ').toUpperCase();
 
         const emailData = getNewDesignRequestAlertTemplate(
@@ -79,7 +78,6 @@ export async function POST(req: NextRequest) {
           nuevoDiseno._id.toString()
         );
 
-        // Enviar a cada administrador usando emailTransporter.sendMail
         for (const admin of admins) {
           await emailTransporter.sendMail({
             from: `"${process.env.BRAND_NAME || 'Candy Ilusiones'}" <${process.env.MAILER_EMAIL}>`,
@@ -93,7 +91,6 @@ export async function POST(req: NextRequest) {
         console.log(`✅ Alerta de nuevo diseño enviada a ${admins.length} administrador(es).`);
       }
     } catch (emailError) {
-      // ⚠️ IMPORTANTE: Si falla el email, NO lanzamos error para no romper la creación del diseño
       console.error('⚠️ Error enviando alertas de nuevo diseño a admins:', emailError);
     }
 
@@ -109,17 +106,27 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// ✅ GET: Cliente lista SUS diseños
+// ✅ GET: Cliente lista SUS diseños (o Admin lista TODOS)
 export async function GET(req: NextRequest) {
   try {
-    const token = await getToken({ req, secret: process.env.JWT_SECRET });
-    if (!token) {
-      return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
+    // 🔑 CORRECCIÓN: getToken lee la cookie de NextAuth automáticamente con la clave correcta
+    const token = await getToken({ req });
+    
+    if (!token || !token.id) {
+      return NextResponse.json({ message: 'No autorizado (Sesión inválida)' }, { status: 401 });
     }
 
     await connectDB();
 
-    const disenos = await DisenoPersonalizadoModel.find({ cliente: token.id })
+    // 🎯 LA CLAVE: Si es admin/superadmin/vendedor, ve todos. Si es 'user', ve solo los suyos.
+    let query: any = {};
+    if (token.role === 'admin' || token.role === 'superadmin' || token.role === 'vendedor') {
+      query = {}; // Ve todos los diseños
+    } else {
+      query = { cliente: token.id }; // Ve SOLO los diseños de este cliente
+    }
+
+    const disenos = await DisenoPersonalizadoModel.find(query)
       .sort({ createdAt: -1 })
       .lean();
 

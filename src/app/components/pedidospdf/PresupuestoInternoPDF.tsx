@@ -1,9 +1,9 @@
 'use client';
 
-import { Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer';
-import Image from 'next/image';
+import { Document, Page, Text, View, StyleSheet, Font, Image } from '@react-pdf/renderer';
+import {siteConfig} from '@/app/lib/config';
 
-// Registrar fuente Helvetica (ya viene con @react-pdf/renderer)
+// Registrar fuente Helvetica (nativa de @react-pdf/renderer)
 Font.register({
     family: 'Helvetica',
     fonts: [
@@ -16,7 +16,7 @@ const styles = StyleSheet.create({
     page: {
         padding: 40,
         fontFamily: 'Helvetica',
-        backgroundColor: '#FFFFFF',
+        backgroundColor: '#FAF7F2', // Fondo crema premium
     },
     header: {
         flexDirection: 'row',
@@ -24,23 +24,30 @@ const styles = StyleSheet.create({
         alignItems: 'flex-start',
         marginBottom: 30,
         borderBottom: 1,
-        borderColor: '#FCE7F3',
+        borderColor: '#E8DFD0', // Borde crema suave
         paddingBottom: 20,
     },
+    brandContainer: {
+        flexDirection: 'column',
+    },
     brandName: {
-        fontSize: 24,
+        fontSize: 22,
         fontWeight: 'bold',
-        color: '#9D174D',
+        color: '#3D2B1F', // Cacao oscuro
+        letterSpacing: 0.5,
+        marginTop: 8,
     },
     brandSubtitle: {
-        fontSize: 10,
-        color: '#78716C',
+        fontSize: 9,
+        color: '#8B6F47', // Marrón cálido
         marginTop: 4,
-        letterSpacing: 1,
+        letterSpacing: 2,
+        textTransform: 'uppercase',
     },
     logo: {
-        width: 80,
+        width: 60,
         height: 'auto',
+        marginBottom: 4,
     },
     projectInfo: {
         alignItems: 'flex-end',
@@ -48,93 +55,111 @@ const styles = StyleSheet.create({
     projectTitle: {
         fontSize: 14,
         fontWeight: 'bold',
-        color: '#44403C',
+        color: '#3D2B1F',
         marginBottom: 4,
     },
     projectDate: {
-        fontSize: 10,
-        color: '#78716C',
+        fontSize: 9,
+        color: '#6B5B4F',
+        letterSpacing: 0.5,
     },
     sectionTitle: {
-        fontSize: 14,
+        fontSize: 11,
         fontWeight: 'bold',
-        color: '#44403C',
-        marginBottom: 15,
+        color: '#3D2B1F',
+        marginBottom: 12,
         marginTop: 10,
+        letterSpacing: 1.5,
+        textTransform: 'uppercase',
     },
     tableHeader: {
         flexDirection: 'row',
         borderBottom: 1,
-        borderColor: '#9D174D',
+        borderColor: '#C9A961', // Acento dorado champagne
         paddingBottom: 8,
         marginBottom: 8,
         fontWeight: 'bold',
-        fontSize: 9,
-        color: '#9D174D',
-        letterSpacing: 1,
+        fontSize: 8,
+        color: '#8B6F47',
+        letterSpacing: 1.5,
         textTransform: 'uppercase',
     },
     tableRow: {
         flexDirection: 'row',
         borderBottom: 1,
-        borderColor: '#FCE7F3',
+        borderColor: '#E8DFD0',
         paddingVertical: 8,
-        fontSize: 10,
-        color: '#44403C',
+        fontSize: 9,
+        color: '#3D2B1F',
     },
     colDesc: { width: '50%' },
     colQty: { width: '15%', textAlign: 'center' },
     colPrice: { width: '20%', textAlign: 'right' },
-    colTotal: { width: '15%', textAlign: 'right', fontWeight: 'bold' },
+    colTotal: { width: '15%', textAlign: 'right', fontWeight: 'bold', color: '#3D2B1F' },
     totalSection: {
         marginTop: 30,
         alignItems: 'flex-end',
     },
     totalBox: {
-        backgroundColor: '#FFFBF7',
-        border: '1pt solid #FCE7F3',
-        borderRadius: 8,
+        backgroundColor: '#FFFFFF',
+        border: '1pt solid #C9A961', // Borde dorado
+        borderRadius: 6,
         padding: 20,
-        width: '45%',
+        width: '50%',
         flexDirection: 'column',
         alignItems: 'flex-end',
     },
     totalLabel: {
-        fontSize: 9,
-        color: '#78716C',
+        fontSize: 8,
+        color: '#8B6F47',
         fontWeight: 'bold',
-        letterSpacing: 1,
+        letterSpacing: 1.5,
         marginBottom: 6,
         textTransform: 'uppercase',
     },
     totalAmount: {
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: 'bold',
-        color: '#9D174D',
+        color: '#3D2B1F',
+    },
+    totalDivider: {
+        width: '100%',
+        height: 1,
+        backgroundColor: '#E8DFD0',
+        marginVertical: 12,
+    },
+    totalLabelFinal: {
+        fontSize: 9,
+        color: '#C9A961', // Etiqueta dorada
+        fontWeight: 'bold',
+        letterSpacing: 1.5,
+        marginBottom: 6,
+        textTransform: 'uppercase',
     },
     totalAmountFinal: {
-        fontSize: 22,
+        fontSize: 20,
         fontWeight: 'bold',
-        color: '#9D174D',
-        marginTop: 4,
+        color: '#3D2B1F',
     },
     notesBox: {
         marginTop: 30,
         padding: 15,
-        backgroundColor: '#FFF1F2',
-        borderRadius: 8,
-        border: '1pt solid #FECDD3',
+        backgroundColor: '#F5F3FF', // Lilá muy suave
+        borderRadius: 6,
+        border: '1pt solid #D4B5D4', // Borde lilá
     },
     notesTitle: {
-        fontSize: 10,
+        fontSize: 9,
         fontWeight: 'bold',
-        color: '#9D174D',
-        marginBottom: 5,
+        color: '#8B6F47',
+        marginBottom: 6,
+        letterSpacing: 1,
+        textTransform: 'uppercase',
     },
     notesText: {
-        fontSize: 10,
-        color: '#44403C',
-        lineHeight: 1.5,
+        fontSize: 9,
+        color: '#3D2B1F',
+        lineHeight: 1.6,
     },
     footer: {
         position: 'absolute',
@@ -143,20 +168,23 @@ const styles = StyleSheet.create({
         right: 40,
         textAlign: 'center',
         borderTop: 1,
-        borderColor: '#D4AF37',
+        borderColor: '#C9A961', // Línea dorada
         paddingTop: 15,
         fontSize: 8,
-        color: '#78716C',
+        color: '#8B6F47',
+        letterSpacing: 0.5,
     },
     manualBadge: {
         fontSize: 7,
-        color: '#92400E',
-        backgroundColor: '#FEF3C7',
+        color: '#8B6F47',
+        backgroundColor: '#F5EFE6', // Crema
         paddingHorizontal: 4,
-        paddingVertical: 1,
+        paddingVertical: 2,
         borderRadius: 3,
-        marginLeft: 5,
+        marginLeft: 6,
         fontWeight: 'bold',
+        borderWidth: 1,
+        borderColor: '#E8DFD0',
     },
 });
 
@@ -175,29 +203,27 @@ interface DatosPresupuesto {
     insumos: InsumoPDF[];
     costoTotal: number;
     precioFinal: number;
+    margenGanancia?: number;
     fecha: string;
 }
 
 export const PresupuestoInternoPDF = ({ datos }: { datos: DatosPresupuesto }) => {
-      const logoSrc = "/img/logo-candy-removebg-preview.png";
+    const logoSrc = siteConfig.logo ;
+
     return (
         <Document>
             <Page size="A4" style={styles.page}>
 
-                {/* Encabezado */}
-
+                {/* Encabezado Unificado y Limpio */}
                 <View style={styles.header}>
-                    <Image style={styles.logo} src={logoSrc}  alt="Logo Candy Ilusiones" />
-                  
-                </View>
-                <View style={styles.header}>
-                    <View>
-                        <Text style={styles.brandName}>Candy Ilusiones</Text>
-                        <Text style={styles.brandSubtitle}>PRESUPUESTO INTERNO DE COSTOS</Text>
+                    <View style={styles.brandContainer}>
+                        <Image style={styles.logo} src={logoSrc.src} />
+                        <Text style={styles.brandName}>{siteConfig.companyName}</Text>
+                        <Text style={styles.brandSubtitle}>Presupuesto Interno de Costos</Text>
                     </View>
                     <View style={styles.projectInfo}>
-                        <Text style={styles.projectTitle}>Proyecto: {datos.nombreProyecto}</Text>
-                        <Text style={styles.projectDate}>Fecha: {datos.fecha}</Text>
+                        <Text style={styles.projectTitle}>{datos.nombreProyecto}</Text>
+                        <Text style={styles.projectDate}>{datos.fecha}</Text>
                     </View>
                 </View>
 
@@ -216,14 +242,17 @@ export const PresupuestoInternoPDF = ({ datos }: { datos: DatosPresupuesto }) =>
                         key={index}
                         style={[
                             styles.tableRow,
-                            index % 2 === 0 ? { backgroundColor: '#FFFBF7' } : {}
+                            index % 2 === 0 ? { backgroundColor: '#FFFFFF' } : { backgroundColor: '#FAF7F2' }
                         ]}
                     >
                         <View style={styles.colDesc}>
-                            <Text>{prod.nombre}</Text>
-                            {prod.esPersonalizado && (
-                                <Text style={styles.manualBadge}>MANUAL</Text>
-                            )}
+                            {/* Anidar Text dentro de Text es la forma correcta y segura en @react-pdf/renderer */}
+                            <Text>
+                                {prod.nombre}
+                                {prod.esPersonalizado && (
+                                    <Text style={styles.manualBadge}> MANUAL</Text>
+                                )}
+                            </Text>
                         </View>
                         <Text style={styles.colQty}>{prod.cantidad}</Text>
                         <Text style={styles.colPrice}>${prod.costoUnitario.toLocaleString('es-AR')}</Text>
@@ -237,9 +266,9 @@ export const PresupuestoInternoPDF = ({ datos }: { datos: DatosPresupuesto }) =>
                         <Text style={styles.totalLabel}>Costo Total de Producción</Text>
                         <Text style={styles.totalAmount}>${datos.costoTotal.toLocaleString('es-AR')}</Text>
 
-                        <View style={{ marginTop: 15, width: '100%', height: 1, backgroundColor: '#FCE7F3' }} />
+                        <View style={styles.totalDivider} />
 
-                        <Text style={{ ...styles.totalLabel, marginTop: 10, color: '#9D174D' }}>
+                        <Text style={styles.totalLabelFinal}>
                             Precio Final Sugerido
                         </Text>
                         <Text style={styles.totalAmountFinal}>
@@ -251,15 +280,15 @@ export const PresupuestoInternoPDF = ({ datos }: { datos: DatosPresupuesto }) =>
                 {/* Notas Internas */}
                 {datos.notasInternas && (
                     <View style={styles.notesBox}>
-                        <Text style={styles.notesTitle}>📝 NOTAS INTERNAS:</Text>
+                        <Text style={styles.notesTitle}>📝 Notas Internas</Text>
                         <Text style={styles.notesText}>{datos.notasInternas}</Text>
                     </View>
                 )}
 
                 {/* Footer */}
                 <View style={styles.footer}>
-                    <Text>Documento generado para uso interno · Candy Ilusiones</Text>
-                    <Text style={{ marginTop: 4 }}>www.candyilusiones.com.ar</Text>
+                    <Text>Documento generado para uso interno · {siteConfig.companyName}</Text>
+                    <Text style={{ marginTop: 4 }}>{siteConfig.companyUrl}</Text>
                 </View>
 
             </Page>

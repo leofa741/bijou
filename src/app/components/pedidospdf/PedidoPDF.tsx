@@ -3,24 +3,37 @@
 import { Document, Page, Text, View, StyleSheet, Image, Font } from '@react-pdf/renderer';
 import { siteConfig } from '@/app/lib/config';
 
+// Registrar fuente Helvetica para máxima compatibilidad en PDFs
 Font.register({
-  family: 'Cursive',
-  src: '/fonts/cursive.ttf',
+  family: 'Helvetica',
+  fonts: [
+    { src: 'https://fonts.gstatic.com/s/helvetica/v12/HELVETICA.woff', fontWeight: 'normal' },
+    { src: 'https://fonts.gstatic.com/s/helvetica/v12/HELVETICA_BOLD.woff', fontWeight: 'bold' }
+  ]
 });
+
+// ✅ INTERFAZ CORREGIDA: mensajevalidez es opcional (?)
+interface ConfigType {
+  titulo: string;
+  labelTotal: string;
+  mensajeCierre: string;
+  validez: string;
+  mensajevalidez?: string; 
+}
 
 const styles = StyleSheet.create({
   page: {
     flexDirection: 'column',
-    backgroundColor: '#e0fdfd',
+    backgroundColor: '#FFFFFF', // Fondo blanco puro para impresión limpia
     padding: 40,
     fontFamily: 'Helvetica',
   },
   watermark: {
     position: 'absolute',
-    top: '35%',
-    left: '30%',
-    width: 200,
-    opacity: 0.06,
+    top: '30%',
+    left: '25%',
+    width: 250,
+    opacity: 0.04, // Muy sutil, como una marca de agua de lujo
     transform: 'rotate(-15deg)',
   },
   header: {
@@ -29,24 +42,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 30,
     borderBottom: 1,
-    borderColor: '#FCE7F3',
+    borderColor: '#E8DFD0', // Borde crema suave
     paddingBottom: 20,
   },
   logo: {
-    width: 80,
+    width: 70,
     height: 'auto',
   },
+  brandContainer: {
+    alignItems: 'flex-end',
+  },
   brandName: {
-    fontFamily: 'Cursive',
-    fontSize: 32,
-    color: '#b985e8',
-    textAlign: 'right',
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#3D2B1F', // Cacao oscuro
+    letterSpacing: 0.5,
   },
   brandSubtitle: {
     fontSize: 8,
-    color: '#78716C',
-    letterSpacing: 2,
-    textAlign: 'right',
+    color: '#8B6F47', // Marrón cálido
+    letterSpacing: 2.5,
+    textTransform: 'uppercase',
     marginTop: 4,
   },
   clientSection: {
@@ -55,77 +71,82 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   clientBox: {
-    backgroundColor: '#FCE7F3',
+    backgroundColor: '#F5F3FF', // Lilá muy suave y elegante
     padding: 15,
-    borderRadius: 5,
+    borderRadius: 6,
     width: '45%',
+    border: '1pt solid #E8DFD0',
   },
   label: {
-    fontSize: 9,
-    color: '#b985e8',
+    fontSize: 8,
+    color: '#8B6F47',
     fontWeight: 'bold',
-    marginBottom: 5,
-    letterSpacing: 1,
+    marginBottom: 6,
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
   },
   text: {
     fontSize: 11,
-    color: '#44403C',
+    color: '#3D2B1F',
     marginBottom: 4,
+    fontWeight: 'bold',
   },
   textLight: {
     fontSize: 10,
-    color: '#78716C',
+    color: '#6B5B4F',
+    marginBottom: 2,
   },
   tableHeader: {
     flexDirection: 'row',
     borderBottom: 1,
-    borderColor: '#9D174D',
+    borderColor: '#C9A961', // Acento dorado champagne
     paddingBottom: 8,
     marginBottom: 8,
     fontWeight: 'bold',
-    fontSize: 9,
-    color: '#9D174D',
-    letterSpacing: 1,
+    fontSize: 8,
+    color: '#8B6F47',
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
   },
   tableRow: {
     flexDirection: 'row',
     borderBottom: 1,
-    borderColor: '#FCE7F3',
-    paddingVertical: 8,
+    borderColor: '#E8DFD0',
+    paddingVertical: 10,
     fontSize: 10,
-    color: '#4403C',
+    color: '#3D2B1F',
   },
   colDesc: { width: '50%' },
   colQty: { width: '15%', textAlign: 'center' },
   colPrice: { width: '20%', textAlign: 'right' },
-  colTotal: { width: '15%', textAlign: 'right', fontWeight: 'bold' },
+  colTotal: { width: '15%', textAlign: 'right', fontWeight: 'bold', color: '#3D2B1F' },
   
-  // 🎨 ESTILOS MEJORADOS PARA TOTALES (Más espacio y jerarquía)
   totalSection: {
     marginTop: 30,
-    alignItems: 'flex-end', // Alinea todo el bloque a la derecha
+    alignItems: 'flex-end',
   },
   totalBox: {
-    backgroundColor: '#FFFBF7', // Tono hueso muy suave y elegante
-    border: '1pt solid #FCE7F3', // Borde sutil para definir el área
-    borderRadius: 8,
-    padding: 20, // Más espacio interno para que "respire"
-    width: '45%', // Un poco más ancho para evitar compresión
-    flexDirection: 'column', // Apila etiqueta y monto verticalmente
-    alignItems: 'flex-end', // Alinea el texto a la derecha
+    backgroundColor: '#FFFFFF',
+    border: '1pt solid #C9A961', // Borde dorado elegante
+    borderRadius: 6,
+    padding: 20,
+    width: '45%',
+    flexDirection: 'column',
+    alignItems: 'flex-end',
   },
   totalLabel: {
-    fontSize: 10,
-    color: '#78716C', // Gris suave para no competir con el monto
+    fontSize: 9,
+    color: '#8B6F47',
     fontWeight: 'bold',
-    letterSpacing: 1,
-    marginBottom: 8, // Espacio entre la etiqueta y el número
+    letterSpacing: 1.5,
+    marginBottom: 8,
     textTransform: 'uppercase',
   },
   totalAmount: {
-    fontSize: 22, // Más grande para impacto visual
+    fontSize: 24,
     fontWeight: 'bold',
-    color: '#9D174D', // Color de marca
+    color: '#3D2B1F',
+    letterSpacing: -0.5,
   },
 
   footer: {
@@ -135,18 +156,26 @@ const styles = StyleSheet.create({
     right: 40,
     textAlign: 'center',
     borderTop: 1,
-    borderColor: '#D4AF37',
+    borderColor: '#C9A961', // Línea dorada
     paddingTop: 15,
   },
-  footerCursive: {
-    fontFamily: 'Cursive',
-    fontSize: 16,
-    color: '#b985e8',
-    marginBottom: 10,
+  footerMessage: {
+    fontSize: 11,
+    color: '#3D2B1F',
+    fontWeight: 'bold',
+    marginBottom: 8,
+    fontStyle: 'italic',
+  },
+  footerValidity: {
+    fontSize: 9,
+    color: '#8B6F47',
+    marginBottom: 12,
+    fontWeight: 'bold',
   },
   footerText: {
     fontSize: 8,
-    color: '#78716C',
+    color: '#6B5B4F',
+    letterSpacing: 0.5,
   },
 });
 
@@ -156,73 +185,76 @@ interface PedidoPDFProps {
 }
 
 export const PedidoPDF = ({ pedido, tipo = 'pedido' }: PedidoPDFProps) => {
-  const config = {
+  // ✅ Definimos el tipo explícitamente para que TypeScript sepa que mensajevalidez es opcional
+  const config: Record<'pedido' | 'presupuesto', ConfigType> = {
     pedido: {
-      titulo: 'PEDIDO',
+      titulo: 'ORDEN DE PEDIDO',
       labelTotal: 'TOTAL A PAGAR',
-      mensajeCierre: '¡Gracias por confiar en Candy Ilusiones para hacer tus momentos especiales!',
+      mensajeCierre: '¡Gracias por confiar en nosotros para hacer tus momentos especiales!',
       validez: 'Pago al retirar',
     },
     presupuesto: {
       titulo: 'PRESUPUESTO',
       labelTotal: 'TOTAL PRESUPUESTADO',
-      mensajeCierre: '¡Gracias por confiar en Candy Ilusiones para hacer tus momentos especiales!',
-      mensajevalidez: '¡Este presupuesto es válido por 15 días! Esperamos tu confirmación.',
+      mensajeCierre: '¡Gracias por considerar nuestros servicios artesanales!',
+      mensajevalidez: 'Este presupuesto es válido por 15 días. Esperamos tu confirmación.',
       validez: 'Válido por: 15 días',
     },
   };
 
-  const current: {
-    titulo: string;
-    labelTotal: string;
-    mensajeCierre: string;
-    mensajevalidez?: string;
-    validez: string;
-  } = config[tipo];
+  const current = config[tipo];
+  
   const total = pedido?.productos?.reduce((acc: number, prod: any) => {
     const precio = prod.precioUnitario || prod.precio || 0;
     return acc + (prod.cantidad * precio);
   }, 0) || pedido?.total || 0;
 
-  const logoSrc = "/img/logo-candy-removebg-preview.png";
+  const logoSrc = siteConfig.logo ;
 
   return (
     <Document>
       <Page size="A4" style={styles.page}>
 
-        <Image style={styles.watermark} src={logoSrc} />
+        {/* Marca de agua sutil */}
+        <Image style={styles.watermark} src={logoSrc.src} />
 
+        {/* Encabezado */}
         <View style={styles.header}>
-          <Image style={styles.logo} src={logoSrc} />
-          <View>
-            <Text style={styles.brandName}>Candy Ilusiones</Text>
-            <Text style={styles.brandSubtitle}>PRODUCTOS PERSONALIZADOS CON AMOR</Text>
+          <Image style={styles.logo} src={logoSrc.src} />
+          <View style={styles.brandContainer}>
+            <Text style={styles.brandName}>{siteConfig.companyName}</Text>
+            <Text style={styles.brandSubtitle}>Productos Personalizados con Amor</Text>
           </View>
         </View>
 
+        {/* Información del Cliente y del Documento */}
         <View style={styles.clientSection}>
           <View style={styles.clientBox}>
-            <Text style={styles.label}>CLIENTE</Text>
+            <Text style={styles.label}>Cliente</Text>
             <Text style={styles.text}>{pedido.clienteNombre || 'Cliente'}</Text>
             <Text style={styles.textLight}>{pedido.clienteEmail || 'Sin email registrado'}</Text>
             <Text style={styles.textLight}>{pedido.clienteTelefono || 'Sin teléfono'}</Text>
           </View>
+          
           <View style={{ width: '45%', alignItems: 'flex-end' }}>
-            <Text style={[styles.label, { textAlign: 'right' }]}>
+            <Text style={[styles.label, { fontSize: 10, color: '#3D2B1F' }]}>
               {current.titulo} N° {pedido._id ? pedido._id.slice(-6).toUpperCase() : '000000'}
             </Text>
-            <Text style={[styles.textLight, { marginTop: 5 }]}>
+            <Text style={[styles.textLight, { marginTop: 6, fontSize: 11 }]}>
               Fecha: {pedido.createdAt ? new Date(pedido.createdAt).toLocaleDateString('es-AR') : new Date().toLocaleDateString('es-AR')}
             </Text>
-            <Text style={[styles.textLight, { marginTop: 5 }]}>{current.validez}</Text>
+            <Text style={[styles.textLight, { marginTop: 4, fontSize: 11, fontWeight: 'bold', color: '#8B6F47' }]}>
+              {current.validez}
+            </Text>
           </View>
         </View>
 
+        {/* Tabla de Productos */}
         <View style={styles.tableHeader}>
-          <Text style={styles.colDesc}>DESCRIPCIÓN</Text>
-          <Text style={styles.colQty}>CANT.</Text>
-          <Text style={styles.colPrice}>PRECIO UNIT.</Text>
-          <Text style={styles.colTotal}>TOTAL</Text>
+          <Text style={styles.colDesc}>Descripción</Text>
+          <Text style={styles.colQty}>Cant.</Text>
+          <Text style={styles.colPrice}>Precio Unit.</Text>
+          <Text style={styles.colTotal}>Total</Text>
         </View>
 
         {pedido.productos?.map((prod: any, index: number) => {
@@ -234,7 +266,7 @@ export const PedidoPDF = ({ pedido, tipo = 'pedido' }: PedidoPDFProps) => {
               key={index}
               style={[
                 styles.tableRow,
-                index % 2 === 0 ? { backgroundColor: '#FFFBF7' } : {}
+                index % 2 === 0 ? { backgroundColor: '#FAF7F2' } : { backgroundColor: '#FFFFFF' }
               ]}
             >
               <Text style={styles.colDesc}>{prod.nombre || 'Producto'}</Text>
@@ -245,7 +277,7 @@ export const PedidoPDF = ({ pedido, tipo = 'pedido' }: PedidoPDFProps) => {
           );
         })}
 
-        {/* 💰 5. TOTALES (DISEÑO PREMIUM MEJORADO) */}
+        {/* Totales */}
         <View style={styles.totalSection}>
           <View style={styles.totalBox}>
             <Text style={styles.totalLabel}>{current.labelTotal}</Text> 
@@ -253,14 +285,17 @@ export const PedidoPDF = ({ pedido, tipo = 'pedido' }: PedidoPDFProps) => {
           </View>
         </View>
 
+        {/* Footer */}
         <View style={styles.footer}>
-          <Text style={styles.footerCursive}>{current.mensajeCierre}</Text>
+          <Text style={styles.footerMessage}>{current.mensajeCierre}</Text>
+          
+          {/* ✅ Ahora TypeScript sabe que esto es seguro gracias a la interfaz ConfigType */}
           {current.mensajevalidez && (
-            <Text style={styles.footerText}>{current.mensajevalidez}</Text>
+            <Text style={styles.footerValidity}>{current.mensajevalidez}</Text>
           )} 
+          
           <Text style={styles.footerText}>
-              
-            {siteConfig.companyName} -  {siteConfig.companyUrl} - {siteConfig.whatsapp} | {siteConfig.email}
+            {siteConfig.companyName} • {siteConfig.companyUrl} • {siteConfig.whatsapp} • {siteConfig.email}
           </Text>
         </View>
 

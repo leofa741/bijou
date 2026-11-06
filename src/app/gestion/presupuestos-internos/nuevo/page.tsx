@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import { useSession } from 'next-auth/react';
 import { FaImage, FaUpload, FaTimes, FaFilePdf } from 'react-icons/fa';
+import { pdf } from '@react-pdf/renderer';
+import { PresupuestoInternoPDF } from '@/app/components/pedidospdf/PresupuestoInternoPDF';
 
 // ─────────────────────────────────────────────────────────────
 // 🔹 ICONOS PREMIUM
@@ -41,7 +43,7 @@ interface InsumoItem {
 export default function CalculadoraPresupuestosInternosPage() {
     const router = useRouter();
     const { data: session, status } = useSession();
-    
+
     const [loadingPage, setLoadingPage] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [insumosDisponibles, setInsumosDisponibles] = useState<InsumoDB[]>([]);
@@ -52,10 +54,14 @@ export default function CalculadoraPresupuestosInternosPage() {
 
     // Estado de la Receta (Insumos)
     const [insumosSeleccionados, setInsumosSeleccionados] = useState<InsumoItem[]>([]);
-    
+
     // Modo de agregado: 'catalogo' | 'manual'
     const [modoAgregado, setModoAgregado] = useState<'catalogo' | 'manual'>('catalogo');
-    
+
+
+    // Estado de descarga de PDF
+    const [downloading, setDownloading] = useState(false);
+
     // Estado para búsqueda en catálogo
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedInsumoId, setSelectedInsumoId] = useState('');
@@ -123,7 +129,7 @@ export default function CalculadoraPresupuestosInternosPage() {
         const margenDecimal = (Number(margenGanancia) || 0) / 100;
         const precioSugerido = costoTotalProduccion + (costoTotalProduccion * margenDecimal);
         const precioFinal = Number(precioManual) || precioSugerido;
-        
+
         const estaEnPerdida = precioFinal > 0 && precioFinal < costoTotalProduccion;
         const gananciaReal = precioFinal - costoTotalProduccion;
 
@@ -133,7 +139,7 @@ export default function CalculadoraPresupuestosInternosPage() {
     // ─────────────────────────────────────────────────────────────
     // 🔹 HANDLERS
     // ─────────────────────────────────────────────────────────────
-    const filteredInsumos = insumosDisponibles.filter(insumo => 
+    const filteredInsumos = insumosDisponibles.filter(insumo =>
         insumo.nombre.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
@@ -181,7 +187,7 @@ export default function CalculadoraPresupuestosInternosPage() {
             subtotal,
             esPersonalizado: true
         }]);
-        
+
         // Resetear formulario manual
         setInsumoManual({ nombre: '', cantidad: 1, costoUnitario: 0, unidadMedida: 'unidades' });
     };
@@ -190,12 +196,54 @@ export default function CalculadoraPresupuestosInternosPage() {
         setInsumosSeleccionados(prev => prev.filter((_, i) => i !== index));
     };
 
-    const handleDownloadPDF = () => {
-        // 🚀 AQUÍ INTEGRARÁS TU COMPONENTE @react-pdf/renderer
-        // Ejemplo: const blob = await pdf(<PresupuestoInternoPDF datos={...} />).toBlob();
-        toast.info('Función de PDF lista para conectar con tu componente @react-pdf/renderer', {
-            style: { background: '#EFF6FF', color: '#1D4ED8', border: '1px solid #BFDBFE' }
-        });
+    const handleDownloadPDF = async () => {
+        if (insumosSeleccionados.length === 0) {
+            toast.warning('Agrega al menos un insumo para generar el PDF', {
+                style: { background: '#FFFBEB', color: '#92400E', border: '1px solid #FCD34D' }
+            });
+            return;
+        }
+
+        setDownloading(true);
+        try {
+            // 🚀 Armamos los datos con el estado ACTUAL de la calculadora
+            const datosParaPDF = {
+                nombreProyecto: nombreProyecto || 'Presupuesto Sin Nombre',
+                notasInternas: notasInternas,
+                insumos: insumosSeleccionados,
+                costoTotal: calculos.costoTotalProduccion,
+                precioFinal: calculos.precioFinal,
+                margenGanancia: Number(margenGanancia) || 0,
+                fecha: new Date().toLocaleDateString('es-AR')
+            };
+
+            // Generamos el PDF
+            const blob = await pdf(<PresupuestoInternoPDF datos={datosParaPDF} />).toBlob();
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+
+            const fileName = nombreProyecto
+                ? `Presupuesto_${nombreProyecto.replace(/\s+/g, '_')}.pdf`
+                : 'Presupuesto_Interno.pdf';
+
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            toast.success('¡PDF descargado con éxito! 📄', {
+                style: { background: '#ECFDF5', color: '#047857', border: '1px solid #A7F3D0' }
+            });
+        } catch (error) {
+            console.error('Error generando PDF:', error);
+            toast.error('No se pudo generar el PDF', {
+                style: { background: '#FFF1F2', color: '#BE185D', border: '1px solid #FECDD3' }
+            });
+        } finally {
+            setDownloading(false);
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -270,14 +318,14 @@ export default function CalculadoraPresupuestosInternosPage() {
 
                 <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-2 space-y-6">
-                        
+
                         {/* Card: Datos del Proyecto */}
                         <div className="bg-white/80 backdrop-blur-xl rounded-[2rem] p-6 sm:p-8 border border-rose-100 shadow-[0_8px_30px_rgb(253,164,175,0.15)]">
                             <h2 className="text-lg font-serif font-medium text-stone-800 mb-6 flex items-center gap-2"><Icons.Sparkles /> Datos del Proyecto</h2>
                             <div className="grid grid-cols-1 gap-6">
                                 <div>
                                     <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-2 ml-1">Nombre del Proyecto / Cliente</label>
-                                    <input type="text" value={nombreProyecto} onChange={e => setNombreProyecto(e.target.value)} required className="w-full px-4 py-3.5 rounded-2xl bg-rose-50/50 border border-rose-200 text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-300 transition-all" placeholder="Ej: Decoración Cumpleaños Sofía" />
+                                    <input type="text" value={nombreProyecto} onChange={e => setNombreProyecto(e.target.value)} required className="w-full px-4 py-3.5 rounded-2xl bg-rose-50/50 border border-rose-200 text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-300 transition-all" placeholder="ingresa el nombre del proyecto o cliente" />
                                 </div>
                                 <div>
                                     <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-2 ml-1">Notas Internas</label>
@@ -289,7 +337,7 @@ export default function CalculadoraPresupuestosInternosPage() {
                         {/* Card: Receta de Insumos (HÍBRIDA) */}
                         <div className="bg-white/80 backdrop-blur-xl rounded-[2rem] p-6 sm:p-8 border border-rose-100 shadow-[0_8px_30px_rgb(253,164,175,0.15)]">
                             <h2 className="text-lg font-serif font-medium text-stone-800 mb-6 flex items-center gap-2">🎨 Materiales y Costos</h2>
-                            
+
                             {/* Selector de Modo */}
                             <div className="flex p-1 bg-rose-50/50 rounded-xl mb-6 border border-rose-100">
                                 <button type="button" onClick={() => setModoAgregado('catalogo')} className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ${modoAgregado === 'catalogo' ? 'bg-white text-rose-600 shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}>
@@ -325,16 +373,16 @@ export default function CalculadoraPresupuestosInternosPage() {
                                 ) : (
                                     <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
                                         <div className="sm:col-span-5">
-                                            <input type="text" value={insumoManual.nombre} onChange={e => setInsumoManual({...insumoManual, nombre: e.target.value})} placeholder="Nombre del insumo (Ej: Cinta dorada especial)" className="w-full px-4 py-3 rounded-xl bg-white border border-rose-200 text-stone-800 focus:outline-none focus:ring-2 focus:ring-pink-200" />
+                                            <input type="text" value={insumoManual.nombre} onChange={e => setInsumoManual({ ...insumoManual, nombre: e.target.value })} placeholder="Nombre del insumo (Ej: Cinta dorada especial)" className="w-full px-4 py-3 rounded-xl bg-white border border-rose-200 text-stone-800 focus:outline-none focus:ring-2 focus:ring-pink-200" />
                                         </div>
                                         <div className="sm:col-span-2">
-                                            <input type="number" step="0.01" value={insumoManual.cantidad} onChange={e => setInsumoManual({...insumoManual, cantidad: Number(e.target.value)})} placeholder="Cant." className="w-full px-4 py-3 rounded-xl bg-white border border-rose-200 text-stone-800 focus:outline-none focus:ring-2 focus:ring-pink-200" />
+                                            <input type="number" step="0.01" value={insumoManual.cantidad} onChange={e => setInsumoManual({ ...insumoManual, cantidad: Number(e.target.value) })} placeholder="Cant." className="w-full px-4 py-3 rounded-xl bg-white border border-rose-200 text-stone-800 focus:outline-none focus:ring-2 focus:ring-pink-200" />
                                         </div>
                                         <div className="sm:col-span-2">
-                                            <input type="text" value={insumoManual.unidadMedida} onChange={e => setInsumoManual({...insumoManual, unidadMedida: e.target.value})} placeholder="Unidad (Ej: metros)" className="w-full px-4 py-3 rounded-xl bg-white border border-rose-200 text-stone-800 focus:outline-none focus:ring-2 focus:ring-pink-200" />
+                                            <input type="text" value={insumoManual.unidadMedida} onChange={e => setInsumoManual({ ...insumoManual, unidadMedida: e.target.value })} placeholder="Unidad (Ej: metros)" className="w-full px-4 py-3 rounded-xl bg-white border border-rose-200 text-stone-800 focus:outline-none focus:ring-2 focus:ring-pink-200" />
                                         </div>
                                         <div className="sm:col-span-2">
-                                            <input type="number" step="0.01" value={insumoManual.costoUnitario || ''} onChange={e => setInsumoManual({...insumoManual, costoUnitario: Number(e.target.value)})} placeholder="Costo Unit." className="w-full px-4 py-3 rounded-xl bg-white border border-rose-200 text-stone-800 focus:outline-none focus:ring-2 focus:ring-pink-200" />
+                                            <input type="number" step="0.01" value={insumoManual.costoUnitario || ''} onChange={e => setInsumoManual({ ...insumoManual, costoUnitario: Number(e.target.value) })} placeholder="Costo Unit." className="w-full px-4 py-3 rounded-xl bg-white border border-rose-200 text-stone-800 focus:outline-none focus:ring-2 focus:ring-pink-200" />
                                         </div>
                                         <div className="sm:col-span-1">
                                             <button type="button" onClick={agregarInsumoManual} className="w-full h-full rounded-xl bg-gradient-to-r from-rose-400 to-pink-500 text-white font-bold shadow-md flex items-center justify-center">
@@ -398,7 +446,7 @@ export default function CalculadoraPresupuestosInternosPage() {
                                     <div className="h-px bg-rose-100" />
                                     <div className="flex justify-between text-base font-bold"><span className="text-stone-800">Costo Total</span><span className="text-rose-600">{formatPrice(calculos.costoTotalProduccion)}</span></div>
                                 </div>
-                                
+
                                 <div className="mb-6">
                                     <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">Margen de Ganancia (%)</label>
                                     <div className="relative">
@@ -421,9 +469,15 @@ export default function CalculadoraPresupuestosInternosPage() {
                                     <button type="submit" disabled={submitting || !nombreProyecto} className="w-full group relative inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-bold text-sm tracking-wide transition-all duration-500 overflow-hidden bg-gradient-to-r from-rose-400 to-pink-500 text-white shadow-lg shadow-rose-200/50 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed">
                                         {submitting ? <><Icons.Spinner /> Guardando...</> : <><span className="relative z-10">Guardar Presupuesto Interno</span></>}
                                     </button>
-                                    
-                                    <button type="button" onClick={handleDownloadPDF} className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm tracking-wide bg-white border-2 border-rose-200 text-rose-600 hover:bg-rose-50 transition-all">
-                                        <FaFilePdf className="text-lg" /> Descargar PDF
+
+                                    <button
+                                        type="button"
+                                        onClick={handleDownloadPDF}
+                                        disabled={downloading}
+                                        className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm tracking-wide bg-white border-2 border-rose-200 text-rose-600 hover:bg-rose-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {downloading ? <Icons.Spinner /> : <FaFilePdf className="text-lg" />}
+                                        {downloading ? 'Generando PDF...' : 'Descargar PDF'}
                                     </button>
                                 </div>
                             </div>

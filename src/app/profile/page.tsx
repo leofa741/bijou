@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { siteConfig } from '@/app/lib/config';
 
 interface UserData {
   name: string;
@@ -70,7 +71,7 @@ export default function ProfilePage() {
             Mi Perfil
           </h1>
           <p className="text-stone-500 font-light">
-            Gestiona tu información y preferencias en Candy Ilusiones
+            Gestiona tu información y preferencias en <span className="font-medium text-rose-600"> {siteConfig.companyName}</span>.
           </p>
         </div>
 

@@ -3,38 +3,7 @@
 import { useState, useCallback } from 'react';
 import Link from 'next/link';
 import { siteConfig } from '@/app/lib/config';
-
-// ─────────────────────────────────────────────────────────────
-// 🔹 Iconos Minimalistas (Estilo Candy)
-// ─────────────────────────────────────────────────────────────
-const Icons = {
-  Mail: () => (
-    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
-    </svg>
-  ),
-  WhatsApp: () => (
-    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-    </svg>
-  ),
-  MapPin: () => (
-    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-    </svg>
-  ),
-  Clock: () => (
-    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-    </svg>
-  ),
-  ArrowRight: () => (
-    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-    </svg>
-  )
-};
+import { FaWhatsapp, FaEnvelope, FaMapMarkerAlt, FaClock, FaArrowRight, FaGem, FaCheck, FaCrown } from 'react-icons/fa';
 
 export default function Contact() {
   // ✅ Estado del formulario
@@ -67,7 +36,7 @@ export default function Contact() {
     if (!nameVal || !contactVal || !messageVal) {
       setStatus({ 
         type: 'error', 
-        message: 'Por favor, completá los campos obligatorios (Nombre, Contacto y Mensaje).' 
+        message: 'Por favor, completá los campos obligatorios para que podamos asesorarte.' 
       });
       setLoading(false);
       return;
@@ -85,11 +54,11 @@ export default function Contact() {
 
       const data = await res.json();
       if (data.success) {
-        setStatus({ type: 'success', message: '¡Mensaje enviado con éxito! 🎉 Te responderemos a la brevedad.' });
+        setStatus({ type: 'success', message: '¡Mensaje enviado con éxito! Te contactaremos a la brevedad.' });
         setForm({ name: '', contact: '', interest: 'general', message: '' });
         setTouched({ name: false, contact: false, message: false });
       } else {
-        setStatus({ type: 'error', message: data.message || 'Hubo un error. Inténtalo por WhatsApp.' });
+        setStatus({ type: 'error', message: data.message || 'Hubo un error. Inténtalo directamente por WhatsApp.' });
       }
     } catch (error) {
       setStatus({ type: 'error', message: 'Error de conexión. Intentá por WhatsApp.' });
@@ -98,36 +67,44 @@ export default function Contact() {
     }
   }, [form]);
 
-  // Helper para clases dinámicas de los inputs (Estilo Candy Pastel)
+  // Helper para clases dinámicas de los inputs (Estilo Premium Cremoso)
   const getInputClass = (fieldName: 'name' | 'contact' | 'message') => {
     const isInvalid = touched[fieldName] && !(form[fieldName] || '').trim();
-    return `w-full bg-purple-50/50 border-2 py-3.5 px-4 text-purple-900 placeholder-purple-400 focus:outline-none transition-all duration-300 text-base rounded-xl ${
+    return `w-full bg-[#FAF7F2] border py-4 px-5 text-[#3D2B1F] placeholder-[#8B6F47]/50 focus:outline-none transition-all duration-500 text-base rounded-xl ${
       isInvalid 
-        ? 'border-red-300 focus:border-red-400 focus:ring-2 focus:ring-red-100' 
-        : 'border-purple-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-100'
+        ? 'border-[#FECACA] focus:border-[#F87171] focus:ring-1 focus:ring-[#F87171]/20' 
+        : 'border-[#E8DFD0] focus:border-[#C9A961] focus:ring-1 focus:ring-[#C9A961]/20'
     }`;
   };
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-cyan-50 text-purple-900 selection:bg-pink-200">
+    <div className="relative min-h-screen bg-[#FAF7F2] text-[#3D2B1F] selection:bg-[#D4B5D4] selection:text-[#3D2B1F]">
       
-      {/* Fondo minimalista con orbes pastel */}
+      {/* ✨ Textura cremosa sutil de fondo */}
+      <div className="fixed inset-0 pointer-events-none opacity-[0.015]" 
+           style={{backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`}} />
+      
+      {/* Orbes de luz ambiental muy sutiles */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-[20%] -right-[10%] w-[600px] h-[600px] bg-purple-200/40 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute top-[40%] -left-[10%] w-[500px] h-[500px] bg-cyan-200/40 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '1s' }} />
-        <div className="absolute bottom-[10%] right-[20%] w-[400px] h-[400px] bg-pink-200/40 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '2s' }} />
+        <div className="absolute -top-[20%] -right-[10%] w-[600px] h-[600px] bg-[#D4B5D4]/20 rounded-full blur-[150px]" />
+        <div className="absolute top-[40%] -left-[10%] w-[500px] h-[500px] bg-[#C9A961]/10 rounded-full blur-[150px]" />
+        <div className="absolute bottom-[10%] right-[20%] w-[400px] h-[400px] bg-[#E8DFD0]/40 rounded-full blur-[120px]" />
       </div>
 
-      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
+      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-42 pb-20">
         
         {/* ───────── HEADER MINIMALISTA ───────── */}
         <div className="max-w-2xl mb-16 sm:mb-24 text-center lg:text-left">
-          <h1 className="text-4xl mt-40 sm:text-5xl md:text-6xl font-black tracking-tight text-purple-900 mb-6">
-            Hablemos de tu <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500">próximo proyecto</span>.
+          <span className="text-[10px] font-semibold text-[#8B6F47] uppercase tracking-[0.35em] mb-4 block">
+            — Contacto —
+          </span>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif font-light tracking-tight text-[#3D2B1F] mb-6 leading-tight">
+            Hablemos de tu <br />
+            <span className="italic text-[#8B6F47]">próxima pieza.</span>
           </h1>
-          <p className="text-lg text-purple-700/80 font-medium leading-relaxed max-w-xl mx-auto lg:mx-0">
-            ¿Tenés una idea en mente? Estamos aquí para ayudarte a crear productos personalizados únicos, 
-            desde sublimación hasta la decoración perfecta para tu evento.
+          <p className="text-lg text-[#6B5B4F] font-extralight leading-relaxed tracking-wide max-w-xl mx-auto lg:mx-0">
+            ¿Tenés una idea en mente? Estamos aquí para ayudarte a crear accesorios únicos, 
+            desde un collar de amatista hasta un macramé que vibre con tu energía.
           </p>
         </div>
 
@@ -140,64 +117,64 @@ export default function Contact() {
                 href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex items-center gap-4 p-5 rounded-2xl bg-white/80 border-2 border-green-200 hover:border-green-400 hover:bg-green-50/80 transition-all duration-300 shadow-sm hover:shadow-md hover:shadow-green-200/50"
+                className="group flex items-center gap-4 p-5 rounded-2xl bg-[#FAF7F2] border border-[#E8DFD0] hover:border-[#C9A961] hover:bg-[#F5EFE6] transition-all duration-500 shadow-sm hover:shadow-[0_10px_25px_rgba(139,115,85,0.08)]"
               >
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-400 to-emerald-500 text-white flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-green-300/40">
-                  <Icons.WhatsApp />
+                <div className="w-12 h-12 rounded-xl bg-[#ECFDF5] text-[#059669] flex items-center justify-center group-hover:scale-110 transition-transform duration-500 border border-[#A7F3D0]/50">
+                  <FaWhatsapp className="w-6 h-6" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-purple-900">WhatsApp</p>
-                  <p className="text-xs text-purple-600 font-medium">Respuesta inmediata 💬</p>
+                  <p className="text-sm font-semibold text-[#3D2B1F]">WhatsApp</p>
+                  <p className="text-xs text-[#8B6F47] font-medium">Respuesta inmediata</p>
                 </div>
-                <div className="ml-auto text-purple-300 group-hover:text-green-600 group-hover:translate-x-1 transition-all">
-                  <Icons.ArrowRight />
+                <div className="ml-auto text-[#E8DFD0] group-hover:text-[#C9A961] group-hover:translate-x-1 transition-all duration-500">
+                  <FaArrowRight className="w-4 h-4" />
                 </div>
               </a>
 
-              <div className="space-y-5 pt-6 border-t-2 border-purple-200/50">
+              <div className="space-y-6 pt-8 border-t border-[#E8DFD0]/60">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-400 to-pink-400 text-white flex items-center justify-center flex-shrink-0 shadow-lg shadow-purple-300/40">
-                    <Icons.Mail />
+                  <div className="w-12 h-12 rounded-xl bg-[#F5F3FF] text-[#7C3AED] flex items-center justify-center flex-shrink-0 border border-[#DDD6FE]/50">
+                    <FaEnvelope className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-purple-900">Email</p>
-                    <a href={`mailto:${siteConfig.email}`} className="text-sm text-purple-600 hover:text-pink-600 transition-colors font-medium">
+                    <p className="text-sm font-semibold text-[#3D2B1F] mb-1">Email</p>
+                    <a href={`mailto:${siteConfig.email}`} className="text-sm text-[#8B6F47] hover:text-[#3D2B1F] transition-colors font-medium break-all">
                       {siteConfig.email}
                     </a>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-400 text-white flex items-center justify-center flex-shrink-0 shadow-lg shadow-cyan-300/40">
-                    <Icons.MapPin />
+                  <div className="w-12 h-12 rounded-xl bg-[#F5EFE6] text-[#8B6F47] flex items-center justify-center flex-shrink-0 border border-[#E8DFD0]">
+                    <FaMapMarkerAlt className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-purple-900">Ubicación</p>
-                    <p className="text-sm text-purple-600 font-medium">Buenos Aires, Argentina</p>
+                    <p className="text-sm font-semibold text-[#3D2B1F] mb-1">Taller / Ubicación</p>
+                    <p className="text-sm text-[#6B5B4F] font-light">{siteConfig.address || 'Buenos Aires, Argentina'}</p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-orange-400 text-white flex items-center justify-center flex-shrink-0 shadow-lg shadow-amber-300/40">
-                    <Icons.Clock />
+                  <div className="w-12 h-12 rounded-xl bg-[#F5EFE6] text-[#8B6F47] flex items-center justify-center flex-shrink-0 border border-[#E8DFD0]">
+                    <FaClock className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-purple-900">Horarios de Atención</p>
-                    <p className="text-sm text-purple-600 font-medium">Lunes a Sábados: 9:00 a 20:00 hs</p>
+                    <p className="text-sm font-semibold text-[#3D2B1F] mb-1">Horarios de Atención</p>
+                    <p className="text-sm text-[#6B5B4F] font-light">Lunes a Sábados: 9:00 a 20:00 hs</p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* ───────── COLUMNA DERECHA: FORMULARIO LIMPIO ───────── */}
+          {/* ───────── COLUMNA DERECHA: FORMULARIO PREMIUM ───────── */}
           <div className="lg:col-span-8">
-            <form onSubmit={handleSubmit} className="bg-white/80 backdrop-blur-xl border-2 border-purple-200 rounded-3xl p-6 sm:p-10 shadow-xl shadow-purple-200/30 space-y-8">
+            <form onSubmit={handleSubmit} className="bg-white border border-[#E8DFD0]/60 rounded-[2rem] p-6 sm:p-10 shadow-[0_10px_40px_rgba(139,115,85,0.06)] space-y-8">
               
               {/* Fila 1: Nombre y Contacto */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label htmlFor="name" className="text-xs font-bold uppercase tracking-wider text-purple-600 ml-1">Nombre *</label>
+                  <label htmlFor="name" className="text-[10px] font-semibold text-[#8B6F47] uppercase tracking-[0.25em] ml-1">Nombre *</label>
                   <input
                     type="text"
                     id="name"
@@ -209,7 +186,7 @@ export default function Contact() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="contact" className="text-xs font-bold uppercase tracking-wider text-purple-600 ml-1">Email o Teléfono *</label>
+                  <label htmlFor="contact" className="text-[10px] font-semibold text-[#8B6F47] uppercase tracking-[0.25em] ml-1">Email o Teléfono *</label>
                   <input
                     type="text"
                     id="contact"
@@ -224,35 +201,35 @@ export default function Contact() {
 
               {/* Fila 2: Interés */}
               <div className="space-y-2">
-                <label htmlFor="interest" className="text-xs font-bold uppercase tracking-wider text-purple-600 ml-1">¿En qué podemos ayudarte?</label>
+                <label htmlFor="interest" className="text-[10px] font-semibold text-[#8B6F47] uppercase tracking-[0.25em] ml-1">¿En qué podemos ayudarte?</label>
                 <div className="relative">
                   <select
                     id="interest"
                     value={form.interest}
                     onChange={handleChange}
-                    className="w-full bg-purple-50/50 border-2 border-purple-200 py-3.5 px-4 text-purple-900 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 transition-all duration-300 text-base appearance-none cursor-pointer rounded-xl font-medium"
+                    className="w-full bg-[#FAF7F2] border border-[#E8DFD0] py-4 px-5 text-[#3D2B1F] focus:outline-none focus:border-[#C9A961] focus:ring-1 focus:ring-[#C9A961]/20 transition-all duration-500 text-base appearance-none cursor-pointer rounded-xl font-medium"
                   >
                     <option value="general" className="bg-white">Consulta general</option>
-                    <option value="sublimacion" className="bg-white">Presupuesto de sublimación</option>
-                    <option value="cumpleaños" className="bg-white">Decoración de cumpleaños</option>
-                    <option value="remeras" className="bg-white">Remeras personalizadas</option>
-                    <option value="mayorista" className="bg-white">Ventas mayoristas</option>
+                    <option value="bijouterie" className="bg-white">Bijouterie / Collares personalizados</option>
+                    <option value="macrame" className="bg-white">Macramé a medida</option>
+                    <option value="mayorista" className="bg-white">Pedidos para emprendimientos</option>
+                    <option value="otro" className="bg-white">Otra consulta</option>
                   </select>
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-purple-400">
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                  <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-[#8B6F47]/60">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                   </div>
                 </div>
               </div>
 
               {/* Fila 3: Mensaje */}
               <div className="space-y-2">
-                <label htmlFor="message" className="text-xs font-bold uppercase tracking-wider text-purple-600 ml-1">Tu mensaje *</label>
+                <label htmlFor="message" className="text-[10px] font-semibold text-[#8B6F47] uppercase tracking-[0.25em] ml-1">Tu mensaje *</label>
                 <textarea
                   id="message"
-                  rows={4}
+                  rows={5}
                   value={form.message}
                   onChange={handleChange}
-                  placeholder="Contanos tu idea, cantidades, colores o cualquier duda que tengas..."
+                  placeholder="Contanos tu idea: colores, piedras que te gusten, medidas o cualquier duda..."
                   className={`${getInputClass('message')} resize-none`}
                   required
                 />
@@ -263,15 +240,15 @@ export default function Contact() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`group relative w-full sm:w-auto inline-flex items-center justify-center gap-3 px-10 py-4 rounded-xl font-bold text-sm tracking-wide transition-all duration-300 min-h-[56px] ${
+                  className={`group relative w-full sm:w-auto inline-flex items-center justify-center gap-3 px-10 py-4 rounded-xl font-medium text-sm tracking-wide transition-all duration-500 min-h-[56px] ${
                     loading 
-                      ? 'bg-purple-200 text-purple-400 cursor-not-allowed' 
-                      : 'bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500 text-white shadow-lg shadow-purple-300/40 hover:shadow-xl hover:shadow-pink-300/50 hover:scale-[1.02] active:scale-[0.98]'
+                      ? 'bg-[#E8DFD0] text-[#8B6F47] cursor-not-allowed' 
+                      : 'bg-[#3D2B1F] text-[#FAF7F2] shadow-[0_10px_25px_rgba(61,43,31,0.15)] hover:bg-[#2A1D14] hover:shadow-[0_15px_35px_rgba(61,43,31,0.25)] hover:scale-[1.02] active:scale-[0.98]'
                   }`}
                 >
                   {loading ? (
                     <>
-                      <svg className="animate-spin h-5 w-5 text-purple-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <svg className="animate-spin h-5 w-5 text-[#8B6F47]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
                       </svg>
@@ -280,8 +257,8 @@ export default function Contact() {
                   ) : (
                     <>
                       <span>Enviar Consulta</span>
-                      <span className="group-hover:translate-x-1 transition-transform duration-300">
-                        <Icons.ArrowRight />
+                      <span className="group-hover:translate-x-1 transition-transform duration-500">
+                        <FaArrowRight className="w-3.5 h-3.5" />
                       </span>
                     </>
                   )}
@@ -290,17 +267,19 @@ export default function Contact() {
 
               {/* Mensajes de Estado */}
               {status.message && (
-                <div className={`p-4 rounded-xl text-sm font-bold animate-fadeInUp border-2 ${
+                <div className={`p-4 rounded-xl text-sm font-medium animate-fadeInUp border flex items-start gap-3 ${
                   status.type === 'success' 
-                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
-                    : 'bg-red-50 text-red-700 border-red-200'
+                    ? 'bg-[#ECFDF5] text-[#065F46] border-[#A7F3D0]' 
+                    : 'bg-[#FEF2F2] text-[#991B1B] border-[#FECACA]'
                 }`}>
-                  {status.message}
+                  {status.type === 'success' ? <FaCheck className="w-4 h-4 mt-0.5 flex-shrink-0" /> : null}
+                  <span>{status.message}</span>
                 </div>
               )}
 
-              <p className="text-xs text-purple-500/80 pt-2 text-center sm:text-left">
-                🔒 Tus datos están seguros. Al enviar, aceptás nuestra política de privacidad.
+              <p className="text-[10px] text-[#8B6F47]/70 pt-4 text-center sm:text-left flex items-center justify-center sm:justify-start gap-2 tracking-wide">
+                <FaCrown className="w-3 h-3 text-[#C9A961]" />
+                Tus datos están seguros. Al enviar, aceptás nuestra política de privacidad.
               </p>
             </form>
           </div>

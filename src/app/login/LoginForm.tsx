@@ -7,6 +7,7 @@ import { signIn, useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { AuthContext } from '../context/AuthContext';
 import Link from 'next/link';
+import { siteConfig } from '@/app/lib/config';
 
 // ─────────────────────────────────────────────────────────────
 // ICONOS SVG PREMIUM (Adaptados a la paleta Candy)
@@ -202,8 +203,8 @@ export default function LoginForm() {
             <div className="relative group">
               <span className="absolute inset-0 bg-gradient-to-r from-rose-300 to-pink-300 rounded-2xl blur-xl opacity-0 group-hover:opacity-40 transition-opacity duration-700" aria-hidden="true" />
               <Image
-                src="/img/logo-candy-removebg-preview.png" 
-                alt="Candy Ilusiones"
+                src={siteConfig.logo} 
+                alt={siteConfig.companyName}
                 width={200}
                 height={80}
                 className="relative transition-transform duration-500 group-hover:scale-[1.02] drop-shadow-sm"

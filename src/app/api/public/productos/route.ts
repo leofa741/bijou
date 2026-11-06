@@ -16,8 +16,9 @@ export async function GET(req: NextRequest) {
     // 2. Construir la consulta dinámicamente
     const query: any = { activo: true };
     
+    // ✅ CORRECCIÓN CLAVE: Búsqueda insensible a mayúsculas/minúsculas
     if (categoria && categoria !== 'todas') {
-      query.categoria = categoria;
+      query.categoria = { $regex: new RegExp(`^${categoria}$`, 'i') };
     }
     
     if (destacadoParam === 'true') {

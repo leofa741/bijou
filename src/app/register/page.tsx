@@ -6,6 +6,8 @@ import { toast } from 'react-toastify';
 import Link from 'next/link';
 import Image from 'next/image';
 
+import { siteConfig } from '@/app/lib/config';
+
 // ─────────────────────────────────────────────────────────────
 // ICONOS SVG PREMIUM (Consistentes con el Login)
 // ─────────────────────────────────────────────────────────────
@@ -143,8 +145,8 @@ export default function RegisterPage() {
             <div className="relative group">
               <span className="absolute inset-0 bg-gradient-to-r from-rose-300 to-pink-300 rounded-2xl blur-xl opacity-0 group-hover:opacity-40 transition-opacity duration-700" aria-hidden="true" />
               <Image
-                src="/img/logo-candy-removebg-preview.png" 
-                alt="Candy Ilusiones"
+                src={siteConfig.logo.src}
+                alt={siteConfig.logo.alt}
                 width={180}
                 height={70}
                 className="relative transition-transform duration-500 group-hover:scale-[1.02] drop-shadow-sm"

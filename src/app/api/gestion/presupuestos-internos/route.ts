@@ -6,7 +6,8 @@ import PresupuestoInternoModel from '@/app/models/PresupuestoInterno';
 // ✅ GET: Listar todos O obtener uno solo por ID
 export async function GET(req: NextRequest) {
   try {
-    const token = await getToken({ req, secret: process.env.JWT_SECRET });
+    // 🔑 CORRECCIÓN: Quitar el 'secret' forzado. Usará NEXTAUTH_SECRET automáticamente
+    const token = await getToken({ req });
     if (!token) return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
 
     await connectDB();
@@ -22,7 +23,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: true, presupuesto }, { status: 200 });
     }
 
-    // Si no viene ID, devolver la lista
+    // Si no viene ID, devolver la lista (Admin ve todo, User ve solo los suyos)
     const isAdmin = ['admin', 'superadmin', 'vendedor'].includes(token.role as string);
     const query = isAdmin ? {} : { creadoPor: token.id };
     const presupuestos = await PresupuestoInternoModel.find(query).sort({ createdAt: -1 }).lean();
@@ -37,7 +38,7 @@ export async function GET(req: NextRequest) {
 // ✅ POST: Crear nuevo
 export async function POST(req: NextRequest) {
   try {
-    const token = await getToken({ req, secret: process.env.JWT_SECRET });
+    const token = await getToken({ req });
     if (!token) return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
 
     await connectDB();
@@ -67,9 +68,10 @@ export async function POST(req: NextRequest) {
   }
 }
 
+// ✅ PUT: Actualizar existente
 export async function PUT(req: NextRequest) {
   try {
-    const token = await getToken({ req, secret: process.env.JWT_SECRET });
+    const token = await getToken({ req });
     if (!token) return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
 
     await connectDB();
@@ -81,10 +83,8 @@ export async function PUT(req: NextRequest) {
     const body = await req.json();
     const { nombreProyecto, notasInternas, insumos, tiempoManoDeObraMinutos, valorHoraManoDeObra, margenGananciaPorcentaje, precioFinalEstimado, costoTotal } = body;
 
-    // ✅ CORRECCIÓN: Mapeamos para asegurar que TODOS los campos requeridos estén presentes
-    // y que 'id' sea siempre un String (ya sea el de MongoDB o el 'custom-xxx')
     const insumosLimpios = insumos.map((p: any) => ({
-      id: p.id || `temp-${Date.now()}`, // Garantiza que siempre haya un string
+      id: p.id || `temp-${Date.now()}`,
       nombre: String(p.nombre || ''),
       unidadMedida: String(p.unidadMedida || 'unidades'),
       costoUnitario: Number(p.costoUnitario || 0),
@@ -99,7 +99,7 @@ export async function PUT(req: NextRequest) {
         $set: { 
           nombreProyecto, 
           notasInternas, 
-          insumos: insumosLimpios, // Enviamos el array limpio y completo
+          insumos: insumosLimpios,
           tiempoManoDeObraMinutos: Number(tiempoManoDeObraMinutos) || 0, 
           valorHoraManoDeObra: Number(valorHoraManoDeObra) || 0, 
           margenGananciaPorcentaje: Number(margenGananciaPorcentaje) || 0, 
@@ -129,7 +129,7 @@ export async function PUT(req: NextRequest) {
 // ✅ DELETE: Eliminar
 export async function DELETE(req: NextRequest) {
   try {
-    const token = await getToken({ req, secret: process.env.JWT_SECRET });
+    const token = await getToken({ req });
     if (!token) return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
 
     await connectDB();

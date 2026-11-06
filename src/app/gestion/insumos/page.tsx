@@ -266,7 +266,7 @@ export default function GestionInsumosPage() {
               <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-1.5 ml-1">Nombre del Insumo</label>
               <input type="text" name="nombre" value={formData.nombre} onChange={handleChange} required
                 className="w-full px-4 py-3.5 rounded-xl sm:rounded-2xl bg-rose-50/50 border border-rose-200 text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-300 transition-all text-base"
-                placeholder="Ej: Tinta de Sublimación Negra" />
+                placeholder="insumo" />
             </div>
 
             <div>
@@ -278,7 +278,7 @@ export default function GestionInsumosPage() {
                 onChange={handleChange}
                 required
                 className="w-full px-4 py-3.5 rounded-xl sm:rounded-2xl bg-rose-50/50 border border-rose-200 text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-300 transition-all text-base"
-                placeholder="Ej: Tintas, Papeles..."
+                placeholder="Categoría, Otros..."
               />
               <datalist id="categorias-insumos">
                 <option value="Sublimación" />
