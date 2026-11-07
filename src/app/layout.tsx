@@ -45,6 +45,32 @@ export const metadata: Metadata = {
   creator: 'Pretty Witches',
   publisher: 'Pretty Witches',
   applicationName: 'Pretty Witches',
+
+  openGraph: {
+    title: 'Pretty Witches',
+    description: 'En Pretty Witches creemos que lo que llevas puesto debe resonar con quien sos. Por eso, creamos cada pieza de bijouterie y macramé no solo por su estética, sino por la intención y la energía que le ponemos al hacerla realidad.',
+    url: 'https://www.prettywitches.com.ar',
+    siteName: 'Pretty Witches',
+    images: [
+      {
+        url: '/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Pretty Witches - Bijouterie y macramé artesanal',
+      },
+    ],
+    locale: 'es_AR',
+    type: 'website',
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "Pretty Witches",
+    description: "Bijouterie y macramé artesanal.",
+    images: ["/og-image.jpg"],
+  },
+
+
   colorScheme: 'dark',
   manifest: '/manifest.json',
   appleWebApp: {
