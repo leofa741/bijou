@@ -1,24 +1,21 @@
-version: '3.8'
-
 services:
-  candy-app:
+  pretty-app:
     build:
       context: .
       dockerfile: Dockerfile
-      # ✅ 3. PASAR LAS VARIABLES DEL .env AL PROCESO DE BUILD
       args:
         MONGODB_CNN: ${MONGODB_CNN}
         NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
         NEXTAUTH_URL: ${NEXTAUTH_URL}
-    container_name: candy-ilusiones-app
+    container_name: pretty-witches-app
     restart: always
     ports:
       - "3000:3000"
     env_file:
-      - .env.production 
+      - .env.production
     networks:
-      - candy-network
+      - pretty-network
 
 networks:
-  candy-network:
+  pretty-network:
     driver: bridge
