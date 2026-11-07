@@ -14,6 +14,7 @@ import { ToastContainer } from "react-toastify";
 import Loader from "./components/loading/Loader";
 import VersionChecker from "./components/version/VersionChecker";
 import { siteConfig } from '@/app/lib/config';
+import PWAInstaller from "./components/PWAInstaller";
 
 
 
@@ -34,22 +35,17 @@ const montserrat = Montserrat({
 });
 
 
-// En src/app/layout.tsx
-
-
-
-
 
 
 export const metadata: Metadata = {
   title: 'Pretty Witches',
   description: 'En Pretty Witches creemos que lo que llevas puesto debe resonar con quien sos. Por eso, creamos cada pieza de bijouterie y macramé no solo por su estética, sino por la intención y la energía que le ponemos al hacerla realidad.',
-  keywords: ['bijouterie', 'macramé', 'productos personalizados', 'regalos artesanales', 'Pretty Witches', 'accesorios únicos'] ,
+  keywords: ['bijouterie', 'macramé', 'productos personalizados', 'regalos artesanales', 'Pretty Witches', 'accesorios únicos'],
   authors: [{ name: 'Pretty Witches', url: 'https://www.prettywitches.com.ar' }],
   creator: 'Pretty Witches',
   publisher: 'Pretty Witches',
   applicationName: 'Pretty Witches',
-  colorScheme: 'dark', 
+  colorScheme: 'dark',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
@@ -83,7 +79,7 @@ export default function RootLayout({
     >
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
-         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
       </head>
 
       <body
@@ -108,42 +104,42 @@ export default function RootLayout({
           <main>
             <VersionChecker />
             {children}
+            <PWAInstaller />
+            <a
+              href={`https://wa.me/${siteConfig.whatsapp}?text=${encodeURIComponent(siteConfig.whatsappMessage)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="fixed bottom-6 left-6 z-50" /* ✅ Cambiado de right-6 a left-6 */
+              aria-label="Chatear por WhatsApp"
+            >
+              <div className="relative group">
+                <div className="w-14 h-14 rounded-full bg-green-500 flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="w-7 h-7 text-white"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.249-.597-.497-.52-.695-.52-.198 0-.422-.024-.644-.024-.224 0-.596.074-.92.446-.324.372-1.239 1.211-1.239 2.949 0 1.737 1.264 3.425 1.412 3.623.149.199 2.096 3.175 5.077 4.488.71.306 1.262.489 1.69.625.712.227 1.36.195 1.871.124.571-.075 1.758-.719 2.006-1.413.249-.694.249-1.289.174-1.413-.074-.124-.272-.199-.57-.348z" />
+                    <path fill="none" d="M0 0h24v24H0z" />
+                    <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.418 0-8-3.582-8-8s3.582-8 8-8 8 3.582 8 8-3.582 8-8 8z" />
+                  </svg>
+                </div>
 
-           <a
-  href={`https://wa.me/${siteConfig.whatsapp}?text=${encodeURIComponent(siteConfig.whatsappMessage)}`}
-  target="_blank"
-  rel="noopener noreferrer"
-  className="fixed bottom-6 left-6 z-50" /* ✅ Cambiado de right-6 a left-6 */
-  aria-label="Chatear por WhatsApp"
->
-  <div className="relative group">
-    <div className="w-14 h-14 rounded-full bg-green-500 flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        className="w-7 h-7 text-white"
-        fill="currentColor"
-        aria-hidden="true"
-      >
-        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.249-.597-.497-.52-.695-.52-.198 0-.422-.024-.644-.024-.224 0-.596.074-.92.446-.324.372-1.239 1.211-1.239 2.949 0 1.737 1.264 3.425 1.412 3.623.149.199 2.096 3.175 5.077 4.488.71.306 1.262.489 1.69.625.712.227 1.36.195 1.871.124.571-.075 1.758-.719 2.006-1.413.249-.694.249-1.289.174-1.413-.074-.124-.272-.199-.57-.348z" />
-        <path fill="none" d="M0 0h24v24H0z" />
-        <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.418 0-8-3.582-8-8s3.582-8 8-8 8 3.582 8 8-3.582 8-8 8z" />
-      </svg>
-    </div>
-
-    {/* ✅ Tooltip centrado perfectamente sobre el botón */}
-    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden md:block opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-      <div className="bg-gray-900 text-white text-xs px-3 py-1.5 rounded-lg whitespace-nowrap shadow">
-        ¿Necesitás ayuda?
-      </div>
-      {/* ✅ Flechita del tooltip también centrada */}
-      <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-900 transform rotate-45"></div>
-    </div>
-  </div>
-</a>
+                {/* ✅ Tooltip centrado perfectamente sobre el botón */}
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden md:block opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  <div className="bg-gray-900 text-white text-xs px-3 py-1.5 rounded-lg whitespace-nowrap shadow">
+                    ¿Necesitás ayuda?
+                  </div>
+                  {/* ✅ Flechita del tooltip también centrada */}
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-900 transform rotate-45"></div>
+                </div>
+              </div>
+            </a>
 
             <Loader />
-         
+
             <ToastContainer
               position="top-right"
               autoClose={3000}
@@ -159,7 +155,7 @@ export default function RootLayout({
               style={{ zIndex: 9999 }}
             />
           </main>
-        
+
           <Footer />
         </Providers>
       </body>
