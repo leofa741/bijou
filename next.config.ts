@@ -21,10 +21,10 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  
-  // ✅ ELIMINADO: output: 'standalone' (No es necesario en Vercel y causa conflictos)
+  output: 'standalone',
 
-  // ✅ AGREGADAS: Las 3 librerías que tu NextAuth usa y que Vercel no debe empaquetar
+
+
   serverExternalPackages: ['jsonwebtoken', 'bcrypt', 'nodemailer'],
 
   outputFileTracingIncludes: {
