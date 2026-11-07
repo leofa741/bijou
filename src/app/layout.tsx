@@ -38,48 +38,35 @@ const montserrat = Montserrat({
 
 
 export const metadata: Metadata = {
-  title: 'Pretty Witches',
-  description: 'En Pretty Witches creemos que lo que llevas puesto debe resonar con quien sos. Por eso, creamos cada pieza de bijouterie y macramé no solo por su estética, sino por la intención y la energía que le ponemos al hacerla realidad.',
-  keywords: ['bijouterie', 'macramé', 'productos personalizados', 'regalos artesanales', 'Pretty Witches', 'accesorios únicos'],
-  authors: [{ name: 'Pretty Witches', url: 'https://www.prettywitches.com.ar' }],
-  creator: 'Pretty Witches',
-  publisher: 'Pretty Witches',
-  applicationName: 'Pretty Witches',
-
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://www.prettywitches.com.ar'), // 👈 ESTO ES LA CLAVE
+  title: 'Pretty Witches | Productos Personalizados',
+  description: 'Productos personalizados con amor para hacer tus celebraciones inolvidables.',
+  manifest: '/manifest.json',
+  themeColor: '#3D2B1F',
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/icons/apple-touch-icon.png',
+  },
   openGraph: {
     title: 'Pretty Witches',
-    description: 'En Pretty Witches creemos que lo que llevas puesto debe resonar con quien sos. Por eso, creamos cada pieza de bijouterie y macramé no solo por su estética, sino por la intención y la energía que le ponemos al hacerla realidad.',
-    url: 'https://www.prettywitches.com.ar',
+    description: 'Productos personalizados para hacer tus momentos únicos',
     siteName: 'Pretty Witches',
     images: [
       {
-        url: '/og-image.jpg',
+        url: '/og-image.jpg', // 👈 Ruta RELATIVA, no absoluta
         width: 1200,
         height: 630,
-        alt: 'Pretty Witches - Bijouterie y macramé artesanal',
+        alt: 'Pretty Witches - Productos Personalizados',
       },
     ],
     locale: 'es_AR',
     type: 'website',
   },
-
   twitter: {
-    card: "summary_large_image",
-    title: "Pretty Witches",
-    description: "Bijouterie y macramé artesanal.",
-    images: ["/og-image.jpg"],
-  },
-
-
-  colorScheme: 'dark',
-  manifest: '/manifest.json',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'default',
+    card: 'summary_large_image',
     title: 'Pretty Witches',
-  },
-  formatDetection: {
-    telephone: false,
+    description: 'Productos personalizados para hacer tus momentos únicos',
+    images: ['/og-image.jpg'], // 👈 Ruta RELATIVA
   },
 };
 
