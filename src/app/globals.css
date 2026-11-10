@@ -233,3 +233,10 @@ body {
 
 
 }
+
+/* Ocultar insignia de Netlify */
+#netlify-badge,
+.netlify-badge,
+a[href*="netlify.com"] img {
+  display: none !important;
+}
