@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
 
         for (const admin of admins) {
           await emailTransporter.sendMail({
-            from: `"${process.env.BRAND_NAME || 'Candy Ilusiones'}" <${process.env.MAILER_EMAIL}>`,
+            from: `"${process.env.BRAND_NAME || siteConfig.companyName }" <${process.env.MAILER_EMAIL}>`,
             to: admin.email,
             subject: emailData.subject,
             html: emailData.html,

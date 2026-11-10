@@ -96,7 +96,7 @@ Hola ${displayName},
 • 🎁 Beneficio: Acceso anticipado y ofertas exclusivas
 
 Recibirás un email cada semana con las últimas creaciones y descuentos especiales.
-Gestioná tus preferencias aquí: ${baseUrl}/perfil/alertas
+
 
 "¿Tenés una idea en mente? Respondé este email y te ayudamos a hacerla realidad."
 

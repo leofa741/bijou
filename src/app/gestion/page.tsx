@@ -17,7 +17,7 @@ import Loader from '@/app/components/loading/Loader'; // Ajusta la ruta si es ne
 import { siteConfig } from '../lib/config';
 
 
-// Módulos disponibles (Actualizados para Candy Ilusiones)
+// Módulos disponibles (Actualizados )
 const modules = [
        {
         id: 'presupuestos-internos',

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 
 // ─────────────────────────────────────────────────────────────
-// 🔹 TIPOS PARA EL FORMULARIO (Candy Ilusiones)
+// 🔹 TIPOS PARA EL FORMULARIO (Pretty Witches)
 // ─────────────────────────────────────────────────────────────
 interface ContactForm {
   name: string;
@@ -54,10 +54,11 @@ export async function POST(req: Request) {
     const emailContent = buildEmailContent(body);
 
     const mailOptions = {
-      from: `"Candy Ilusiones" <${process.env.MAILER_EMAIL}>`,
+      // ✅ CAMBIO CLAVE: Nombre del remitente actualizado
+      from: `"Pretty Witches" <${process.env.MAILER_EMAIL}>`,
       to: process.env.MAILER_EMAIL,
       cc: process.env.MAILER_CC ? process.env.MAILER_CC.split(',').map((e: string) => e.trim()) : undefined,
-      subject: `🎨 Nueva consulta: ${interestLabels[interest]} - ${name}`,
+      subject: `✨ Nueva consulta: ${interestLabels[interest]} - ${name}`,
       html: emailContent,
       text: buildTextContent(body),
     };
@@ -85,26 +86,26 @@ export async function POST(req: Request) {
 }
 
 // ─────────────────────────────────────────────────────────────
-// 🔹 PLANTILLA HTML PREMIUM (Paleta Candy Pastel)
+// 🔹 PLANTILLA HTML PREMIUM (Paleta Alila Cremoso + Lujo Silencioso)
 // ─────────────────────────────────────────────────────────────
 function buildEmailContent(data: ContactForm): string {
   const { name, contact, interest, message } = data;
   
   const styles = {
-    container: 'font-family: Arial, sans-serif; max-width: 650px; margin: 0 auto; padding: 0; background-color: #faf5ff;',
-    header: 'background: linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #22d3ee 100%); padding: 32px 24px; text-align: center; border-radius: 16px 16px 0 0;',
-    headerTitle: 'color: white; font-size: 26px; font-weight: bold; margin: 0 0 8px 0; text-shadow: 0 2px 4px rgba(0,0,0,0.1);',
-    headerSubtitle: 'color: rgba(255,255,255,0.95); font-size: 15px; margin: 0; font-weight: 500;',
-    body: 'background: #ffffff; padding: 32px 24px; border-radius: 0 0 16px 16px; border: 2px solid #e9d5ff; border-top: none;',
-    card: 'background: #faf5ff; padding: 20px; border-radius: 12px; margin-bottom: 16px; border: 1px solid #f3e8ff;',
-    label: 'color: #9333ea; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 6px 0; font-weight: bold;',
-    value: 'color: #581c87; font-size: 16px; font-weight: 600; margin: 0 0 12px 0;',
-    messageBox: 'background: #fdf4ff; padding: 20px; border-radius: 12px; border-left: 5px solid #d946ef; margin: 16px 0;',
-    messageText: 'color: #6b21a8; font-size: 15px; line-height: 1.6; margin: 0; white-space: pre-wrap;',
-    footer: 'text-align: center; padding: 24px; color: #a855f7; font-size: 13px; background-color: #faf5ff; border-radius: 0 0 16px 16px;',
-    badge: 'display: inline-block; background: linear-gradient(135deg, #a855f7, #ec4899); color: white; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: bold; box-shadow: 0 4px 6px rgba(168, 85, 247, 0.2);',
-    divider: 'height: 2px; background: linear-gradient(to right, transparent, #e9d5ff, transparent); margin: 24px 0;',
-    button: 'display: inline-block; background: linear-gradient(135deg, #a855f7, #ec4899); color: white; padding: 14px 36px; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 15px; box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3); transition: transform 0.2s;',
+    container: 'font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; max-width: 650px; margin: 0 auto; padding: 0; background-color: #FAF7F2;',
+    header: 'background-color: #F5F3FF; padding: 32px 24px; text-align: center; border-bottom: 1px solid #E8DFD0;',
+    headerTitle: 'color: #3D2B1F; font-size: 24px; font-weight: 600; margin: 0 0 8px 0; letter-spacing: -0.02em;',
+    headerSubtitle: 'color: #8B6F47; font-size: 14px; margin: 0; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;',
+    body: 'background: #FFFFFF; padding: 32px 24px; border: 1px solid #E8DFD0; border-top: none;',
+    card: 'background: #FAF7F2; padding: 20px; border-radius: 12px; margin-bottom: 16px; border: 1px solid #E8DFD0;',
+    label: 'color: #8B6F47; font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em; margin: 0 0 6px 0; font-weight: 700;',
+    value: 'color: #3D2B1F; font-size: 15px; font-weight: 600; margin: 0 0 12px 0;',
+    messageBox: 'background: #FFFFFF; padding: 20px; border-radius: 8px; border-left: 3px solid #C9A961; margin: 16px 0;',
+    messageText: 'color: #3D2B1F; font-size: 15px; line-height: 1.6; margin: 0; white-space: pre-wrap;',
+    footer: 'text-align: center; padding: 24px; color: #8B6F47; font-size: 12px; background-color: #FAF7F2; border-top: 1px solid #E8DFD0;',
+    badge: 'display: inline-block; background: #3D2B1F; color: #FAF7F2; padding: 6px 16px; border-radius: 9999px; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;',
+    divider: 'height: 1px; background: #E8DFD0; margin: 24px 0;',
+    button: 'display: inline-block; background: #3D2B1F; color: #FAF7F2; padding: 14px 36px; text-decoration: none; border-radius: 9999px; font-weight: 600; font-size: 14px; letter-spacing: 0.05em;',
   };
 
   return `
@@ -113,13 +114,13 @@ function buildEmailContent(data: ContactForm): string {
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Nueva consulta - Candy Ilusiones</title>
+      <title>Nueva consulta - Pretty Witches</title>
     </head>
     <body style="${styles.container}">
       
       <div style="${styles.header}">
         <h1 style="${styles.headerTitle}">✨ Nueva Consulta</h1>
-        <p style="${styles.headerSubtitle}">Candy Ilusiones - Productos Personalizados</p>
+        <p style="${styles.headerSubtitle}">Pretty Witches - Productos Personalizados</p>
       </div>
 
       <div style="${styles.body}">
@@ -146,7 +147,7 @@ function buildEmailContent(data: ContactForm): string {
         <div style="${styles.divider}"></div>
 
         <div style="text-align: center; margin-top: 28px;">
-          <a href="mailto:${contact.includes('@') ? contact : ''}?subject=Re: Consulta Candy Ilusiones" 
+          <a href="mailto:${contact.includes('@') ? contact : ''}?subject=Re: Consulta Pretty Witches" 
              style="${styles.button}">
             Responder a ${name}
           </a>
@@ -155,7 +156,7 @@ function buildEmailContent(data: ContactForm): string {
       </div>
 
       <div style="${styles.footer}">
-        <p style="margin: 0 0 8px 0; font-weight: bold; font-size: 15px;">Candy Ilusiones 🎨</p>
+        <p style="margin: 0 0 8px 0; font-weight: 700; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;">Pretty Witches</p>
         <p style="margin: 0 0 4px 0;">📧 ${process.env.MAILER_EMAIL}</p>
         <p style="margin: 0;">Este mensaje fue enviado desde el formulario de contacto web.</p>
       </div>
@@ -172,7 +173,7 @@ function buildTextContent(data: ContactForm): string {
   const { name, contact, interest, message } = data;
   
   return `
-NUEVA CONSULTA - CANDY ILUSIONES 🎨
+NUEVA CONSULTA - PRETTY WITCHES ✨
 ========================================================
 
 INTERÉS: ${interestLabels[interest] || interest}
@@ -186,6 +187,6 @@ ${message}
 
 ---
 Responder a: ${contact}
-Enviado desde: Formulario web Candy Ilusiones
+Enviado desde: Formulario web Pretty Witches
   `.trim();
 }

@@ -14,6 +14,7 @@ import LogModel from '../models/LogLogin';
 import { emailTransporter } from './emails/transporter';
 import { getLoginAlertTemplate } from './emails/templates/loginAlert';
 import { getWelcomeEmailTemplate } from './emails/templates/welcomeEmail';
+import { siteConfig } from './config';
 
 
 
@@ -153,7 +154,7 @@ async function crearClienteAutomatico(userData: {
 async function sendEmail({ to, subject, html, text }: { to: string; subject: string; html: string; text?: string }) {
   try {
     await emailTransporter.sendMail({
-      from: `"${process.env.BRAND_NAME || 'Candy Ilusiones'}" <${process.env.MAILER_EMAIL}>`,
+      from: `"${process.env.BRAND_NAME || siteConfig.companyName }" <${process.env.MAILER_EMAIL}>`,
       to,
       subject,
       html,

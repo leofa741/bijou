@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 
 const PAGE_SIZE = 10;
 
-// 🎨 Sistema de diseño Premium Candy Ilusiones
+// 🎨 Sistema de diseño Premium 
 const theme = {
     bg: 'bg-gradient-to-br from-rose-50/50 via-[#FFFBF7] to-amber-50/30',
     bgCard: 'bg-white/80 backdrop-blur-xl',

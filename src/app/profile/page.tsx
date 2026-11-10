@@ -183,7 +183,7 @@ export default function ProfilePage() {
               </div>
               <h3 className="text-xl font-serif font-medium text-stone-800 mb-2">¿Cerrar sesión?</h3>
               <p className="text-stone-500 text-sm mb-8 leading-relaxed">
-                Estás a punto de salir de tu cuenta en Candy Ilusiones. ¿Estás segura?
+                Estás a punto de salir de su cuenta en {siteConfig.companyName}. ¿Estás segura?
               </p>
               <div className="flex gap-3">
                 <button

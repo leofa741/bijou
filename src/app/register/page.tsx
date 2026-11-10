@@ -104,7 +104,7 @@ export default function RegisterPage() {
       const data = await response.json();
 
       if (response.ok) {
-        toast.success('¡Registro exitoso! Bienvenida a Candy Ilusiones 🎨', { 
+        toast.success('¡Registro exitoso! Bienvenida  ` 🎨', { 
           theme: 'colored',
           style: { background: '#FFF1F2', color: '#BE185D', border: '1px solid #FECDD3' }
         });

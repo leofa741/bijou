@@ -46,8 +46,7 @@ export const getLoginAlertTemplate = (to: string) => {
             </p>
             <p style="font-size: 12px; color: #A8A29E; margin: 0; line-height: 1.5;">
               Desarrollado con 💜 por <a href="${tumarcaUrl}" style="color: ${brandColor}; text-decoration: none; font-weight: 600;">www.tumarca.ar</a><br>
-              <a href="${baseUrl}/perfil/alertas" style="color: ${brandColor}; text-decoration: underline; text-underline-offset: 2px; margin-top: 4px; display: inline-block;">Gestiona tus alertas de seguridad aquí</a>
-            </p>
+           </p>
           </div>
 
         </div>
