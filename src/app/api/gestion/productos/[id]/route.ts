@@ -1,3 +1,4 @@
+// api/gestion/productos/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/app/lib/mongoose';
 import ProductoModel from '@/app/models/Producto';
@@ -13,7 +14,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         }
 
         await connectDB();
-        const producto = await ProductoModel.findById(await (await params).id);
+        const producto = await ProductoModel.findById((await params).id);
 
         if (!producto) {
             return NextResponse.json({ message: 'Producto no encontrado' }, { status: 404 });
@@ -36,8 +37,10 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
         await connectDB();
         const body = await req.json();
+        
+        // 👈 NUEVO: Agregamos 'subcategoria' aquí
         const {
-            nombre, descripcion, categoria, insumos, tiempoManoDeObraMinutos,
+            nombre, descripcion, categoria, subcategoria, stock,precioMayorista,  insumos, tiempoManoDeObraMinutos,
             valorHoraManoDeObra, margenGananciaPorcentaje, precioFinalManual, imagen, destacado, nuevo
         } = body;
 
@@ -59,8 +62,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
                 costoTotalInsumos += subtotal;
 
                 insumosDetallados.push({
-                    insumoId: insumo._id, nombre: insumo.nombre, cantidadUsada: item.cantidadUsada,
-                    costoUnitarioCalculado: costoPorUnidad, subtotalCalculado: subtotal
+                    insumoId: insumo._id, 
+                    nombre: insumo.nombre, 
+                    cantidadUsada: item.cantidadUsada,
+                    costoUnitarioCalculado: costoPorUnidad, 
+                    subtotalCalculado: subtotal
                 });
             }
 
@@ -69,13 +75,19 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
             const margenDecimal = (margenGananciaPorcentaje || 0) / 100;
             const precioSugerido = costoTotalProduccion + (costoTotalProduccion * margenDecimal);
             const precioFinal = precioFinalManual ? Number(precioFinalManual) : precioSugerido;
-            const estaEnPerdida = precioFinal < costoTotalProduccion;
+            const estaEnPerdida = precioFinal > 0 && precioFinal < costoTotalProduccion;
 
             updateData = {
-                insumos: insumosDetallados, tiempoManoDeObraMinutos: tiempoManoDeObraMinutos || 0,
-                valorHoraManoDeObra: valorHoraManoDeObra || 0, margenGananciaPorcentaje: margenGananciaPorcentaje || 0,
-                precioFinalManual: precioFinal, costoTotalInsumos, costoManoObra, costoTotalProduccion,
-                precioSugerido, estaEnPerdida
+                insumos: insumosDetallados, 
+                tiempoManoDeObraMinutos: tiempoManoDeObraMinutos || 0,
+                valorHoraManoDeObra: valorHoraManoDeObra || 0, 
+                margenGananciaPorcentaje: margenGananciaPorcentaje || 0,
+                precioFinalManual: precioFinal, 
+                costoTotalInsumos, 
+                costoManoObra, 
+                costoTotalProduccion,
+                precioSugerido, 
+                estaEnPerdida
             };
         } 
         
@@ -83,20 +95,32 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         if (nombre !== undefined) updateData.nombre = nombre.trim();
         if (descripcion !== undefined) updateData.descripcion = descripcion.trim();
         if (categoria !== undefined) updateData.categoria = categoria;
+        
+        // 👈 NUEVO: Actualización de la subcategoría
+        if (subcategoria !== undefined) updateData.subcategoria = subcategoria;
+        if (stock !== undefined) updateData.stock = Number(stock);
+        if (precioMayorista !== undefined) updateData.precioMayorista = Number(precioMayorista);
+        
         if (precioFinalManual !== undefined && !insumos) updateData.precioFinalManual = Number(precioFinalManual);
         if (imagen !== undefined) updateData.imagen = imagen;
         if (destacado !== undefined) updateData.destacado = destacado;
         if (nuevo !== undefined) updateData.nuevo = nuevo;
 
         const productoActualizado = await ProductoModel.findByIdAndUpdate(
-            await (await params).id, { $set: updateData }, { new: true, runValidators: true }
+            (await params).id, 
+            { $set: updateData }, 
+            { new: true, runValidators: true }
         );
 
         if (!productoActualizado) {
             return NextResponse.json({ message: 'Producto no encontrado' }, { status: 404 });
         }
 
-        return NextResponse.json({ success: true, message: 'Producto actualizado', producto: productoActualizado }, { status: 200 });
+        return NextResponse.json({ 
+            success: true, 
+            message: 'Producto actualizado', 
+            producto: productoActualizado 
+        }, { status: 200 });
 
     } catch (error: any) {
         console.error('❌ Error actualizando producto:', error);
@@ -113,7 +137,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
         }
 
         await connectDB();
-        const productoEliminado = await ProductoModel.findByIdAndDelete(await (await params).id);
+        const productoEliminado = await ProductoModel.findByIdAndDelete((await params).id);
 
         if (!productoEliminado) {
             return NextResponse.json({ message: 'Producto no encontrado' }, { status: 404 });

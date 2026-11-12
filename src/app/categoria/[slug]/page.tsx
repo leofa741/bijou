@@ -15,6 +15,7 @@ interface Product {
   descripcion: string;
   categoria: string;
   precioFinal: number;
+  precioMayorista?: number; // 👈 NUEVO CAMPO
   imagen: string;
   destacado: boolean;
   nuevo?: boolean;
@@ -68,7 +69,11 @@ export default function CategoriaPage() {
     return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(amount);
   };
 
-  const categoriaNombre = slug.charAt(0).toUpperCase() + slug.slice(1);
+  const decodedSlug = decodeURIComponent(slug);
+  const categoriaNombre = decodedSlug
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
 
   if (loading) {
     return (
@@ -93,7 +98,7 @@ export default function CategoriaPage() {
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         
-        <div className="mb-12 mt-50 sm:mt-32">
+        <div className="mb-12 mt-50 sm:mt-62">
           <button onClick={() => router.push('/catalogo')} className="inline-flex items-center gap-2 text-[#8B6F47] hover:text-[#3D2B1F] transition-colors mb-4 font-medium">
             <FaArrowLeft className="w-4 h-4" /> Volver al catálogo
           </button>
@@ -136,7 +141,6 @@ export default function CategoriaPage() {
                     )}
                   </div>
                   
-                  {/* ✅ BOTÓN AGREGAR: Optimizado para Móvil y Desktop */}
                   <button 
                     onClick={(e) => {
                       e.stopPropagation();
@@ -145,12 +149,10 @@ export default function CategoriaPage() {
                     className="absolute bottom-4 right-4 sm:bottom-5 sm:left-0 sm:right-0 sm:p-5 sm:translate-y-full sm:group-hover:translate-y-0 transition-all duration-500 ease-out z-20"
                     aria-label="Agregar al carrito"
                   >
-                    {/* Versión Móvil: Botón redondo flotante */}
                     <div className="sm:hidden w-11 h-11 rounded-full bg-[#3D2B1F] text-[#FAF7F2] flex items-center justify-center shadow-lg active:scale-90 transition-transform border border-[#C9A961]/20">
                       <FaPlus className="w-4 h-4" />
                     </div>
                     
-                    {/* Versión Desktop: Botón ancho que sube con hover */}
                     <div className="hidden sm:flex w-full py-3.5 rounded-xl bg-[#3D2B1F] text-[#FAF7F2] font-medium text-sm tracking-wide hover:bg-[#2A1D14] transition-all duration-500 shadow-lg border border-transparent hover:border-[#C9A961]/30 items-center justify-center gap-2">
                       <FaPlus className="w-3 h-3" /> Agregar a la Selección
                     </div>
@@ -169,11 +171,26 @@ export default function CategoriaPage() {
                     {product.descripcion}
                   </p>
                   
-                  <div className="flex items-center justify-between mt-auto pt-4 border-t border-[#E8DFD0]/60">
-                    <span className="text-[#3D2B1F] font-serif font-semibold text-xl tracking-tight">
-                      {formatPrice(product.precioFinal)}
-                    </span>
-                    <FaRegStar className="w-4 h-4 text-[#C9A961]" />
+                  {/* 👈 SECCIÓN DE PRECIOS ACTUALIZADA (UNITARIO + MAYORISTA) */}
+                  <div className="mt-auto pt-4 border-t border-[#E8DFD0]/60 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[#3D2B1F] font-serif font-semibold text-xl tracking-tight">
+                        {formatPrice(product.precioFinal)}
+                      </span>
+                      <span className="text-[9px] uppercase tracking-widest text-[#8B6F47] font-medium">Unitario</span>
+                    </div>
+                    
+                    {product.precioMayorista && product.precioMayorista > 0 && (
+                      <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-[#F5EFE6]/80 border border-[#E8DFD0]">
+                        <div className="flex items-center gap-2">
+                          <FaGem className="w-3 h-3 text-[#C9A961]" />
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-[#3D2B1F]">Por Mayor</span>
+                        </div>
+                        <span className="text-[#3D2B1F] font-serif font-semibold text-sm">
+                          {formatPrice(product.precioMayorista)}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -182,7 +199,6 @@ export default function CategoriaPage() {
         )}
       </div>
 
-      {/* Botón Flotante del Carrito */}
       {cartCount > 0 && (
         <button 
           onClick={() => setIsCartOpen(true)}
@@ -198,7 +214,6 @@ export default function CategoriaPage() {
         </button>
       )}
 
-      {/* Drawer del Carrito */}
       {isCartOpen && (
         <div className="fixed inset-0 z-50 flex justify-end">
           <div className="absolute inset-0 bg-[#3D2B1F]/40 backdrop-blur-sm" onClick={() => setIsCartOpen(false)} />

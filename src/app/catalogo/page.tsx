@@ -14,6 +14,7 @@ interface Product {
   descripcion: string;
   categoria: string;
   precioFinal: number;
+  precioMayorista?: number; // 👈 NUEVO CAMPO
   imagen: string;
   destacado: boolean;
   nuevo: boolean;
@@ -153,7 +154,6 @@ export default function CatalogoPage() {
                       )}
                     </div>
                     
-                    {/* ✅ BOTÓN AGREGAR: Optimizado para Móvil y Desktop */}
                     <button 
                       onClick={(e) => { e.stopPropagation(); addToCart(product); }}
                       className="absolute bottom-4 right-4 sm:bottom-5 sm:left-0 sm:right-0 sm:p-5 sm:translate-y-full sm:group-hover:translate-y-0 transition-all duration-500 ease-out z-20"
@@ -179,11 +179,27 @@ export default function CatalogoPage() {
                     <p className="text-[#6B5B4F] text-sm mb-4 line-clamp-2 flex-1 font-extralight leading-relaxed">
                       {product.descripcion}
                     </p>
-                    <div className="flex items-center justify-between mt-auto pt-4 border-t border-[#E8DFD0]/60">
-                      <span className="text-[#3D2B1F] font-serif font-semibold text-xl tracking-tight">
-                        {formatPrice(product.precioFinal)}
-                      </span>
-                      <FaRegStar className="w-4 h-4 text-[#C9A961]" />
+                    
+                    {/* 👈 SECCIÓN DE PRECIOS ACTUALIZADA (UNITARIO + MAYORISTA) */}
+                    <div className="mt-auto pt-4 border-t border-[#E8DFD0]/60 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[#3D2B1F] font-serif font-semibold text-xl tracking-tight">
+                          {formatPrice(product.precioFinal)}
+                        </span>
+                        <span className="text-[9px] uppercase tracking-widest text-[#8B6F47] font-medium">Unitario</span>
+                      </div>
+                      
+                      {product.precioMayorista && product.precioMayorista > 0 && (
+                        <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-[#F5EFE6]/80 border border-[#E8DFD0]">
+                          <div className="flex items-center gap-2">
+                            <FaGem className="w-3 h-3 text-[#C9A961]" />
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#3D2B1F]">Por Mayor</span>
+                          </div>
+                          <span className="text-[#3D2B1F] font-serif font-semibold text-sm">
+                            {formatPrice(product.precioMayorista)}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

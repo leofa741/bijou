@@ -4,9 +4,10 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Swal from 'sweetalert2';
-import { 
-  FaBoxOpen, FaPlus, FaEdit, FaTrash, FaExclamationTriangle, 
-  FaCheckCircle, FaSearch, FaFilter, FaStar, FaChevronLeft, FaChevronRight
+import {
+  FaBoxOpen, FaPlus, FaEdit, FaTrash, FaExclamationTriangle,
+  FaCheckCircle, FaSearch, FaFilter, FaStar, FaChevronLeft, FaChevronRight,
+  FaBoxes, FaTags
 } from 'react-icons/fa';
 
 interface Product {
@@ -14,13 +15,15 @@ interface Product {
   nombre: string;
   descripcion: string;
   categoria: string;
-  precioFinalManual: number; 
+  precioFinalManual: number;
+  precioMayorista?: number; // 👈 NUEVO CAMPO
   costoTotalProduccion: number;
   margenGananciaPorcentaje: number;
   estaEnPerdida: boolean;
   imagen: string;
   destacado: boolean;
   nuevo: boolean;
+  stock: number;
   createdAt: string;
 }
 
@@ -33,6 +36,18 @@ export default function DashboardProductosPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
   const [togglingId, setTogglingId] = useState<string | null>(null);
+
+  // 📦 ESTADOS PARA EL MODAL DE STOCK
+  const [isStockModalOpen, setIsStockModalOpen] = useState(false);
+  const [selectedProductForStock, setSelectedProductForStock] = useState<Product | null>(null);
+  const [stockInput, setStockInput] = useState<number>(0);
+  const [updatingStock, setUpdatingStock] = useState(false);
+
+  // 💰 ESTADOS PARA EL MODAL DE PRECIO MAYORISTA
+  const [isPriceModalOpen, setIsPriceModalOpen] = useState(false);
+  const [selectedProductForPrice, setSelectedProductForPrice] = useState<Product | null>(null);
+  const [priceInput, setPriceInput] = useState<number>(0);
+  const [updatingPrice, setUpdatingPrice] = useState(false);
 
   // 📄 PAGINACIÓN
   const [currentPage, setCurrentPage] = useState(1);
@@ -61,7 +76,6 @@ export default function DashboardProductosPage() {
     fetchProducts();
   }, [status, session, router]);
 
-  // 🔍 BÚSQUEDA: Resetear a página 1 cuando cambian los filtros
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, filterCategory]);
@@ -73,7 +87,15 @@ export default function DashboardProductosPage() {
       });
       if (res.ok) {
         const data = await res.json();
-        setProducts(data.productos || []);
+        
+        // 🔥 MAGIA INFALIBLE: Forzamos valores por defecto si la BD no los tiene.
+        const productosProcesados = (data.productos || []).map((p: any) => ({
+          ...p,
+          stock: p.stock === undefined || p.stock === null ? 0 : Number(p.stock),
+          precioMayorista: p.precioMayorista === undefined || p.precioMayorista === null ? 0 : Number(p.precioMayorista)
+        }));
+        
+        setProducts(productosProcesados);
       } else {
         throw new Error('Error al obtener los datos');
       }
@@ -95,15 +117,15 @@ export default function DashboardProductosPage() {
     try {
       const res = await fetch(`/api/gestion/productos?id=${id}`, {
         method: 'PATCH',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.user?.token}` 
+          'Authorization': `Bearer ${session?.user?.token}`
         },
         body: JSON.stringify({ destacado: !currentStatus })
       });
 
       if (res.ok) {
-        setProducts(prev => prev.map(p => 
+        setProducts(prev => prev.map(p =>
           p._id === id ? { ...p, destacado: !currentStatus } : p
         ));
         
@@ -150,11 +172,13 @@ export default function DashboardProductosPage() {
     if (!result.isConfirmed) return;
     
     try {
-      const res = await fetch(`/api/gestion/productos?id=${id}`, { 
+      const res = await fetch(`/api/gestion/productos/${id}`, { 
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${session?.user?.token}` }
       });
       
+      const data = await res.json();
+
       if (res.ok) {
         Swal.fire({
           icon: 'success',
@@ -166,21 +190,135 @@ export default function DashboardProductosPage() {
           timer: 2000,
           showConfirmButton: false
         });
-        setCurrentPage(1); // 📄 PAGINACIÓN: Volver a la página 1 al eliminar
+        setCurrentPage(1); 
         fetchProducts();
       } else {
-        const errorData = await res.json();
-        throw new Error(errorData.message || 'Error al eliminar');
+        throw new Error(data.message || `Error del servidor (${res.status})`);
+      }
+    } catch (error: any) {
+      console.error('❌ Error detallado al eliminar:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error al eliminar',
+        text: error.message || 'No se pudo eliminar el producto. Inténtalo de nuevo.',
+        confirmButtonColor: '#BE185D',
+        background: '#FFFBF7',
+        color: '#44403C'
+      });
+    }
+  };
+
+  // 📦 FUNCIONES DEL MODAL DE STOCK
+  const handleOpenStockModal = (product: Product) => {
+    setSelectedProductForStock(product);
+    setStockInput(product.stock);
+    setIsStockModalOpen(true);
+  };
+
+  const handleSaveStock = async () => {
+    if (!selectedProductForStock) return;
+    if (stockInput < 0) {
+      Swal.fire({ icon: 'warning', title: 'Stock inválido', text: 'El stock no puede ser negativo.', confirmButtonColor: '#BE185D' });
+      return;
+    }
+
+    setUpdatingStock(true);
+    try {
+      const res = await fetch(`/api/gestion/productos/${selectedProductForStock._id}`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.user?.token}` 
+        },
+        body: JSON.stringify({ stock: stockInput })
+      });
+
+      if (res.ok) {
+        setProducts(prev => prev.map(p => 
+          p._id === selectedProductForStock._id ? { ...p, stock: stockInput } : p
+        ));
+        
+        Swal.fire({
+          icon: 'success',
+          title: '¡Stock actualizado!',
+          text: `El stock de "${selectedProductForStock.nombre}" ahora es ${stockInput}.`,
+          timer: 2000,
+          showConfirmButton: false,
+          background: '#FFFBF7',
+          color: '#44403C'
+        });
+        setIsStockModalOpen(false);
+      } else {
+        throw new Error('Error al actualizar');
       }
     } catch (error) {
       Swal.fire({
         icon: 'error',
         title: 'Error',
-        text: 'No se pudo eliminar el producto. Inténtalo de nuevo.',
+        text: 'No se pudo actualizar el stock. Inténtalo de nuevo.',
         confirmButtonColor: '#BE185D',
         background: '#FFFBF7',
         color: '#44403C'
       });
+    } finally {
+      setUpdatingStock(false);
+    }
+  };
+
+  // 💰 FUNCIONES DEL MODAL DE PRECIO MAYORISTA
+  const handleOpenPriceModal = (product: Product) => {
+    setSelectedProductForPrice(product);
+    setPriceInput(product.precioMayorista || 0);
+    setIsPriceModalOpen(true);
+  };
+
+  const handleSavePrice = async () => {
+    if (!selectedProductForPrice) return;
+    if (priceInput < 0) {
+      Swal.fire({ icon: 'warning', title: 'Precio inválido', text: 'El precio no puede ser negativo.', confirmButtonColor: '#BE185D' });
+      return;
+    }
+
+    setUpdatingPrice(true);
+    try {
+      const res = await fetch(`/api/gestion/productos/${selectedProductForPrice._id}`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.user?.token}` 
+        },
+        body: JSON.stringify({ precioMayorista: priceInput })
+      });
+
+      if (res.ok) {
+        setProducts(prev => prev.map(p => 
+          p._id === selectedProductForPrice._id ? { ...p, precioMayorista: priceInput } : p
+        ));
+        
+        Swal.fire({
+          icon: 'success',
+          title: '¡Precio actualizado!',
+          text: `El precio mayorista ahora es ${formatPrice(priceInput)}.`,
+          timer: 2000,
+          showConfirmButton: false,
+          background: '#FFFBF7',
+          color: '#44403C'
+        });
+        setIsPriceModalOpen(false);
+      } else {
+        throw new Error('Error al actualizar');
+      }
+    } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo actualizar el precio. Inténtalo de nuevo.',
+        confirmButtonColor: '#BE185D',
+        background: '#FFFBF7',
+        color: '#44403C'
+      });
+    } finally {
+      setUpdatingPrice(false);
     }
   };
 
@@ -194,12 +332,13 @@ export default function DashboardProductosPage() {
     return matchesSearch && matchesCategory;
   });
 
-  // 📄 PAGINACIÓN: Lógica para obtener solo los elementos de la página actual
+  // 📄 PAGINACIÓN
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentProducts = filteredProducts.slice(indexOfFirstItem, indexOfLastItem);
 
+  // 📊 ESTADÍSTICAS
   const totalProductos = products.length;
   const productosEnPerdida = products.filter(p => p.estaEnPerdida).length;
   const margenPromedio = products.length > 0 
@@ -221,10 +360,8 @@ export default function DashboardProductosPage() {
   }
 
   return (
-    // 🛡️ BLINDADO: overflow-x-hidden y pb-24 para evitar scroll horizontal
     <div className="relative min-h-screen bg-gradient-to-br from-rose-50/50 via-[#FFFBF7] to-amber-50/30 p-4 sm:p-8 pb-24 overflow-x-hidden">
-      {/* ✅ CORREGIDO: mt-8 sm:mt-12 en lugar de mt-52 */}
-      <div className="max-w-7xl mx-auto mt-52 sm:mt-52 space-y-6 sm:space-y-8">
+      <div className="max-w-7xl mx-auto mt-8 sm:mt-12 space-y-6 sm:space-y-8">
         
         {/* ─── HEADER ─── */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -251,7 +388,7 @@ export default function DashboardProductosPage() {
           </button>
         </div>
 
-        {/* ─── ESTADÍSTICAS ─── */}
+        {/* ─── ESTADÍSTICAS PREMIUM ─── */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-5 border border-rose-100 shadow-sm active:scale-[0.99] transition-transform">
             <div className="flex items-center justify-between mb-2">
@@ -333,7 +470,6 @@ export default function DashboardProductosPage() {
               <p className="text-sm mt-1">Intenta ajustar los filtros o la búsqueda.</p>
             </div>
           ) : (
-            // 📄 PAGINACIÓN: Usamos currentProducts en lugar de filteredProducts
             currentProducts.map((prod) => (
               <div key={prod._id} className="bg-white rounded-2xl p-4 border border-rose-100 shadow-sm active:scale-[0.99] transition-transform">
                 {/* Cabecera de la tarjeta */}
@@ -368,19 +504,43 @@ export default function DashboardProductosPage() {
                   </div>
                 </div>
 
+                {/* 👈 BADGE DE STOCK VISIBLE Y ELEGANTE (MÓVIL) */}
+                <button
+                  onClick={() => handleOpenStockModal(prod)}
+                  className="w-full mb-3 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-indigo-50 text-indigo-700 font-bold text-sm border border-indigo-100 hover:bg-indigo-100 hover:border-indigo-200 transition-all active:scale-95"
+                >
+                  <FaBoxes className="text-indigo-500" />
+                  Stock disponible: <span className="text-indigo-900 text-base">{prod.stock} unidades</span>
+                </button>
+
                 {/* Datos financieros en grilla */}
-                <div className="grid grid-cols-2 gap-3 mb-4">
-                  <div className="bg-rose-50/50 p-3 rounded-xl">
-                    <p className="text-[10px] uppercase text-stone-400 font-bold mb-0.5">Costo Prod.</p>
-                    <p className="font-semibold text-stone-700 text-sm break-words">{formatPrice(prod.costoTotalProduccion)}</p>
-                  </div>
-                  <div className="bg-rose-50/50 p-3 rounded-xl">
-                    <p className="text-[10px] uppercase text-stone-400 font-bold mb-0.5">Precio Venta</p>
-                    <p className="font-bold text-stone-800 text-sm break-words">{formatPrice(prod.precioFinalManual)}</p>
+                <div className="space-y-3 mb-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-rose-50/50 p-3 rounded-xl">
+                      <p className="text-[10px] uppercase text-stone-400 font-bold mb-0.5">Costo Prod.</p>
+                      <p className="font-semibold text-stone-700 text-sm break-words">{formatPrice(prod.costoTotalProduccion)}</p>
+                    </div>
+                    <div className="bg-rose-50/50 p-3 rounded-xl">
+                      <p className="text-[10px] uppercase text-stone-400 font-bold mb-0.5">Precio Unit.</p>
+                      <p className="font-bold text-stone-800 text-sm break-words">{formatPrice(prod.precioFinalManual)}</p>
+                    </div>
                   </div>
                   
-                  {/* Margen ocupa todo el ancho para destacar */}
-                  <div className={`col-span-2 p-3 rounded-xl border flex justify-between items-center ${
+                  {/* 👈 BOTÓN DE PRECIO MAYORISTA (MÓVIL) */}
+                  <button
+                    onClick={() => handleOpenPriceModal(prod)}
+                    className="w-full flex items-center justify-between p-3 rounded-xl bg-emerald-50 border border-emerald-100 hover:bg-emerald-100 transition-all active:scale-95"
+                  >
+                    <div className="flex items-center gap-2">
+                      <FaTags className="text-emerald-500" />
+                      <span className="text-[10px] uppercase text-emerald-700 font-bold">Precio Mayorista</span>
+                    </div>
+                    <span className="font-bold text-emerald-800 text-base">
+                      {prod.precioMayorista ? formatPrice(prod.precioMayorista) : 'Sin definir'}
+                    </span>
+                  </button>
+
+                  <div className={`p-3 rounded-xl border flex justify-between items-center ${
                     prod.estaEnPerdida 
                       ? 'bg-red-50 border-red-200' 
                       : 'bg-emerald-50 border-emerald-200'
@@ -402,7 +562,7 @@ export default function DashboardProductosPage() {
                   </div>
                 </div>
 
-                {/* Botones de acción SIEMPRE visibles y grandes para el dedo */}
+                {/* Botones de acción */}
                 <div className="grid grid-cols-3 gap-3 pt-3 border-t border-rose-100">
                   <button 
                     onClick={() => handleToggleDestacado(prod._id, prod.destacado)}
@@ -456,15 +616,14 @@ export default function DashboardProductosPage() {
                 <thead>
                   <tr className="bg-rose-50/50 text-stone-500 text-xs uppercase tracking-wider font-bold border-b border-rose-100">
                     <th className="px-6 py-5">Producto</th>
-                    <th className="px-6 py-5">Categoría</th>
-                    <th className="px-6 py-5 text-right">Costo</th>
-                    <th className="px-6 py-5 text-right">Precio</th>
+                    <th className="px-6 py-5 text-center">Stock</th>
+                    <th className="px-6 py-5 text-right">P. Unitario</th>
+                    <th className="px-6 py-5 text-right">P. Mayorista</th>
                     <th className="px-6 py-5 text-center">Margen</th>
                     <th className="px-6 py-5 text-right">Acciones</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-rose-100">
-                  {/* 📄 PAGINACIÓN: Usamos currentProducts en lugar de filteredProducts */}
                   {currentProducts.map((prod) => (
                     <tr key={prod._id} className="group hover:bg-rose-50/30 transition-colors">
                       <td className="px-6 py-5">
@@ -488,17 +647,32 @@ export default function DashboardProductosPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-5">
-                        <span className="inline-flex px-2.5 py-1 rounded-full bg-stone-100 text-stone-600 text-[10px] font-bold uppercase tracking-wider">
-                          {prod.categoria}
-                        </span>
+                      
+                      <td className="px-6 py-5 text-center">
+                        <button 
+                          onClick={() => handleOpenStockModal(prod)}
+                          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-50 text-indigo-700 font-semibold text-sm border border-indigo-100 hover:bg-indigo-100 hover:shadow-sm transition-all cursor-pointer"
+                        >
+                          <FaBoxes className="w-3.5 h-3.5 text-indigo-500" />
+                          {prod.stock} und.
+                        </button>
                       </td>
-                      <td className="px-6 py-5 text-right text-stone-500 font-medium">
-                        {formatPrice(prod.costoTotalProduccion)}
-                      </td>
+
                       <td className="px-6 py-5 text-right font-bold text-stone-800 text-lg">
                         {formatPrice(prod.precioFinalManual)}
                       </td>
+
+                      {/* 👈 CELDA DE PRECIO MAYORISTA (ESCRITORIO) */}
+                      <td className="px-6 py-5 text-right">
+                        <button 
+                          onClick={() => handleOpenPriceModal(prod)}
+                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 font-semibold text-sm border border-emerald-100 hover:bg-emerald-100 transition-all cursor-pointer"
+                        >
+                          <FaTags className="w-3.5 h-3.5 text-emerald-500" />
+                          {prod.precioMayorista ? formatPrice(prod.precioMayorista) : '---'}
+                        </button>
+                      </td>
+
                       <td className="px-6 py-5 text-center">
                         {prod.estaEnPerdida ? (
                           <div className="inline-flex flex-col items-center">
@@ -522,7 +696,21 @@ export default function DashboardProductosPage() {
                       </td>
                       <td className="px-6 py-5 text-right">
                         <div className="flex items-center justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                          <button 
+                          <button
+                            onClick={() => handleOpenPriceModal(prod)}
+                            className="p-2.5 rounded-xl hover:bg-emerald-50 text-emerald-400 hover:text-emerald-600 transition-all"
+                            title="Actualizar Precio Mayorista"
+                          >
+                            <FaTags className="w-5 h-5" />
+                          </button>
+                          <button
+                            onClick={() => handleOpenStockModal(prod)}
+                            className="p-2.5 rounded-xl hover:bg-indigo-50 text-indigo-400 hover:text-indigo-600 transition-all"
+                            title="Actualizar Stock"
+                          >
+                            <FaBoxes className="w-5 h-5" />
+                          </button>
+                          <button
                             onClick={() => handleToggleDestacado(prod._id, prod.destacado)}
                             disabled={togglingId === prod._id}
                             className={`p-2.5 rounded-xl hover:bg-white hover:shadow-md transition-all ${
@@ -534,16 +722,16 @@ export default function DashboardProductosPage() {
                           >
                             <FaStar className={`w-5 h-5 ${togglingId === prod._id ? 'animate-pulse' : ''}`} />
                           </button>
-                          <button 
-                            onClick={() => router.push(`/gestion/productos/editar/${prod._id}`)} 
-                            className="p-2.5 rounded-xl hover:bg-white hover:shadow-md text-stone-400 hover:text-blue-500 transition-all" 
+                          <button
+                            onClick={() => router.push(`/gestion/productos/editar/${prod._id}`)}
+                            className="p-2.5 rounded-xl hover:bg-white hover:shadow-md text-stone-400 hover:text-blue-500 transition-all"
                             title="Editar"
                           >
                             <FaEdit className="w-5 h-5" />
                           </button>
-                          <button 
-                            onClick={() => handleDelete(prod._id, prod.nombre)} 
-                            className="p-2.5 rounded-xl hover:bg-white hover:shadow-md text-stone-400 hover:text-red-500 transition-all" 
+                          <button
+                            onClick={() => handleDelete(prod._id, prod.nombre)}
+                            className="p-2.5 rounded-xl hover:bg-white hover:shadow-md text-stone-400 hover:text-red-500 transition-all"
                             title="Eliminar"
                           >
                             <FaTrash className="w-5 h-5" />
@@ -558,7 +746,7 @@ export default function DashboardProductosPage() {
           )}
         </div>
 
-        {/* 📄 PAGINACIÓN: Controles de navegación (Visible en móvil y escritorio) */}
+        {/* 📄 PAGINACIÓN */}
         {totalPages > 1 && (
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-white/60 backdrop-blur-sm rounded-2xl border border-rose-100">
             <p className="text-stone-500 text-sm text-center sm:text-left">
@@ -584,6 +772,147 @@ export default function DashboardProductosPage() {
         )}
 
       </div>
+
+      {/* ═══════════════════════════════════════════════════
+          👈 MODAL DE ACTUALIZACIÓN DE STOCK (PREMIUM)
+          ═══════════════════════════════════════════════════ */}
+      {isStockModalOpen && selectedProductForStock && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/40 backdrop-blur-sm transition-opacity">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md border border-rose-100 overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="bg-gradient-to-r from-indigo-50 to-blue-50 p-6 border-b border-indigo-100">
+              <h3 className="text-xl font-serif font-bold text-stone-800 flex items-center gap-2">
+                <FaBoxes className="text-indigo-500" />
+                Actualizar Stock
+              </h3>
+              <p className="text-sm text-stone-500 mt-1">
+                Producto: <span className="font-semibold text-stone-700">{selectedProductForStock.nombre}</span>
+              </p>
+            </div>
+
+            <div className="p-6 space-y-6">
+              <div className="flex items-center justify-center gap-4">
+                <button 
+                  onClick={() => setStockInput(prev => Math.max(0, prev - 1))}
+                  className="w-12 h-12 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 flex items-center justify-center text-xl font-bold transition-colors active:scale-95"
+                >
+                  -
+                </button>
+                
+                <div className="text-center">
+                  <input 
+                    type="number" 
+                    min="0"
+                    value={stockInput}
+                    onChange={(e) => setStockInput(Math.max(0, parseInt(e.target.value) || 0))}
+                    className="w-32 text-center text-4xl font-bold text-stone-800 bg-transparent border-b-2 border-indigo-200 focus:border-indigo-500 focus:outline-none py-2"
+                  />
+                  <p className="text-xs text-stone-400 uppercase font-bold tracking-wider mt-1">Unidades</p>
+                </div>
+
+                <button 
+                  onClick={() => setStockInput(prev => prev + 1)}
+                  className="w-12 h-12 rounded-full bg-indigo-100 hover:bg-indigo-200 text-indigo-600 flex items-center justify-center text-xl font-bold transition-colors active:scale-95"
+                >
+                  +
+                </button>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => setIsStockModalOpen(false)}
+                  disabled={updatingStock}
+                  className="flex-1 py-3 rounded-xl border border-stone-200 text-stone-600 font-semibold hover:bg-stone-50 transition-colors disabled:opacity-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleSaveStock}
+                  disabled={updatingStock}
+                  className="flex-1 py-3 rounded-xl bg-rose-600 hover:bg-rose-700 !text-white font-bold shadow-lg shadow-rose-200 active:scale-[0.98] transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {updatingStock ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4 !text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <span className="!text-white">Guardando...</span>
+                    </>
+                  ) : (
+                    <span className="!text-white">Guardar Stock</span>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════
+          💰 MODAL DE ACTUALIZACIÓN DE PRECIO MAYORISTA
+          ═══════════════════════════════════════════════════ */}
+      {isPriceModalOpen && selectedProductForPrice && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/40 backdrop-blur-sm transition-opacity">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md border border-rose-100 overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="bg-gradient-to-r from-emerald-50 to-teal-50 p-6 border-b border-emerald-100">
+              <h3 className="text-xl font-serif font-bold text-stone-800 flex items-center gap-2">
+                <FaTags className="text-emerald-500" />
+                Actualizar Precio Mayorista
+              </h3>
+              <p className="text-sm text-stone-500 mt-1">
+                Producto: <span className="font-semibold text-stone-700">{selectedProductForPrice.nombre}</span>
+              </p>
+            </div>
+
+            <div className="p-6 space-y-6">
+              <div className="flex items-center justify-center">
+                <div className="text-center w-full">
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 font-bold text-lg">$</span>
+                    <input 
+                      type="number" 
+                      min="0"
+                      value={priceInput}
+                      onChange={(e) => setPriceInput(Math.max(0, parseInt(e.target.value) || 0))}
+                      className="w-full text-center text-4xl font-bold text-stone-800 bg-transparent border-b-2 border-emerald-200 focus:border-emerald-500 focus:outline-none py-2 pl-8"
+                      placeholder="0"
+                    />
+                  </div>
+                  <p className="text-xs text-stone-400 uppercase font-bold tracking-wider mt-2">Precio por mayor (ARS)</p>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => setIsPriceModalOpen(false)}
+                  disabled={updatingPrice}
+                  className="flex-1 py-3 rounded-xl border border-stone-200 text-stone-600 font-semibold hover:bg-stone-50 transition-colors disabled:opacity-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleSavePrice}
+                  disabled={updatingPrice}
+                  className="flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 !text-white font-bold shadow-lg shadow-emerald-200 active:scale-[0.98] transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {updatingPrice ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4 !text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <span className="!text-white">Guardando...</span>
+                    </>
+                  ) : (
+                    <span className="!text-white">Guardar Precio</span>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

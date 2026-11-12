@@ -6,9 +6,6 @@ import { toast } from 'react-toastify';
 import { useSession } from 'next-auth/react';
 import { FaImage, FaUpload, FaTimes } from 'react-icons/fa';
 
-// ─────────────────────────────────────────────────────────────
-// 🔹 ICONOS PREMIUM
-// ─────────────────────────────────────────────────────────────
 const Icons = {
     Plus: () => <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>,
     Trash: () => <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>,
@@ -43,58 +40,63 @@ export default function NuevoProductoPage() {
     const [loadingPage, setLoadingPage] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [insumosDisponibles, setInsumosDisponibles] = useState<InsumoDB[]>([]);
+    
+    // 👇 NUEVOS ESTADOS PARA CATEGORÍAS INTELIGENTES
+    const [categoriasPrincipales, setCategoriasPrincipales] = useState<string[]>([]);
+    const [mapeoSubcategorias, setMapeoSubcategorias] = useState<Record<string, string[]>>({});
 
-    // Estado del Producto
     const [nombre, setNombre] = useState('');
     const [descripcion, setDescripcion] = useState('');
-    const [categoria, setCategoria] = useState('');
+    const [categoria, setCategoria] = useState('');       // Texto libre con sugerencias
+    const [subcategoria, setSubcategoria] = useState(''); // Texto libre con sugerencias filtradas
 
-    // Estado de la Receta (Insumos)
     const [insumosSeleccionados, setInsumosSeleccionados] = useState<InsumoSeleccionado[]>([]);
     const [selectedInsumoId, setSelectedInsumoId] = useState('');
     const [cantidadInsumo, setCantidadInsumo] = useState<number | ''>('');
 
-    // 🔍 Estado del Buscador Premium de Insumos
     const [searchTerm, setSearchTerm] = useState('');
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
-    // Estado de Costos y Precios
     const [tiempoMinutos, setTiempoMinutos] = useState<number | ''>(15);
     const [valorHora, setValorHora] = useState<number | ''>(5000);
     const [margenGanancia, setMargenGanancia] = useState<number | ''>(50);
     const [precioManual, setPrecioManual] = useState<number | ''>('');
 
-    // Estado para Imagen
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string>('');
     const [uploadingImage, setUploadingImage] = useState(false);
 
-    // ─────────────────────────────────────────────────────────────
-    // 🔹 CARGA DE INSUMOS
-    // ─────────────────────────────────────────────────────────────
     useEffect(() => {
         if (status === 'loading') return;
         if (status === 'unauthenticated') { router.push('/login'); return; }
 
-        const fetchInsumos = async () => {
+        const fetchData = async () => {
             try {
-                const res = await fetch('/api/gestion/insumos', {
-                    headers: { 'Authorization': `Bearer ${session?.user?.token}` }
-                });
-                const data = await res.json();
-                if (data.success) setInsumosDisponibles(data.insumos);
+                const [resInsumos, resCategorias] = await Promise.all([
+                    fetch('/api/gestion/insumos', { headers: { 'Authorization': `Bearer ${session?.user?.token}` } }),
+                    fetch('/api/gestion/categorias') 
+                ]);
+                
+                const dataInsumos = await resInsumos.json();
+                if (dataInsumos.success) setInsumosDisponibles(dataInsumos.insumos);
+
+                const dataCategorias = await resCategorias.json();
+                if (dataCategorias.success) {
+                    setCategoriasPrincipales(dataCategorias.categoriasPrincipales || []);
+                    setMapeoSubcategorias(dataCategorias.mapeoSubcategorias || {});
+                }
+
             } catch (error) {
-                console.error('Error cargando insumos:', error);
+                console.error('❌ Error cargando datos:', error);
             } finally {
                 setLoadingPage(false);
             }
         };
 
-        if (status === 'authenticated') fetchInsumos();
+        if (status === 'authenticated') fetchData();
     }, [status, session, router]);
 
-    // 🔹 Cerrar dropdown al hacer clic fuera
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -105,9 +107,6 @@ export default function NuevoProductoPage() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // ─────────────────────────────────────────────────────────────
-    // 🔹 CÁLCULOS EN TIEMPO REAL
-    // ─────────────────────────────────────────────────────────────
     const calculos = useMemo(() => {
         const costoInsumos = insumosSeleccionados.reduce((sum, item) => sum + item.subtotal, 0);
         const tiempoHoras = (Number(tiempoMinutos) || 0) / 60;
@@ -124,9 +123,6 @@ export default function NuevoProductoPage() {
         return { costoInsumos, costoManoObra, costoTotalProduccion, precioSugerido, precioFinal, estaEnPerdida, gananciaReal };
     }, [insumosSeleccionados, tiempoMinutos, valorHora, margenGanancia, precioManual]);
 
-    // ─────────────────────────────────────────────────────────────
-    // 🔹 HANDLERS
-    // ─────────────────────────────────────────────────────────────
     const filteredInsumos = insumosDisponibles.filter(insumo => 
         insumo.nombre.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -150,7 +146,7 @@ export default function NuevoProductoPage() {
             { insumoId: insumo._id, nombre: insumo.nombre, unidadMedida: insumo.unidadMedida, costoUnitario, cantidad: Number(cantidadInsumo), subtotal }
         ]);
         setSelectedInsumoId('');
-        setSearchTerm(''); // Limpiar buscador
+        setSearchTerm('');
         setCantidadInsumo('');
     };
 
@@ -170,7 +166,7 @@ export default function NuevoProductoPage() {
         }
     };
 
-      const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
         if (calculos.estaEnPerdida) {
@@ -178,15 +174,17 @@ export default function NuevoProductoPage() {
             if (!confirmacion) return;
         }
 
+        if (!categoria.trim()) {
+            toast.error('Debes escribir o seleccionar una categoría');
+            return;
+        }
+
         setSubmitting(true);
         try {
             let imageUrl = '';
             
-            // 1. Subida de imagen con manejo de errores robusto
             if (imageFile) {
                 setUploadingImage(true);
-                
-                // Verificación extra para móviles: a veces el tamaño se reporta mal
                 if (imageFile.size > 5 * 1024 * 1024) {
                     throw new Error('La imagen es demasiado pesada (>5MB). Por favor, comprímela o elige otra.');
                 }
@@ -208,11 +206,11 @@ export default function NuevoProductoPage() {
                 setUploadingImage(false);
             }
 
-            // 2. Envío de datos del producto
             const payload = {
                 nombre,
                 descripcion,
-                categoria,
+                categoria: categoria.trim(),
+                subcategoria: subcategoria.trim(),
                 insumos: insumosSeleccionados.map(i => ({ insumoId: i.insumoId, cantidadUsada: i.cantidad })),
                 tiempoManoDeObraMinutos: Number(tiempoMinutos),
                 valorHoraManoDeObra: Number(valorHora),
@@ -238,15 +236,11 @@ export default function NuevoProductoPage() {
                 });
                 router.push('/gestion/productos');
             } else {
-                // Lanzamos el error para que lo capture el catch general
                 throw new Error(data.message || `Error del servidor (Código: ${res.status})`);
             }
         } catch (error: any) {
-            // 3. Manejo de errores detallado (CRUCIAL para móviles)
             console.error('🔴 Error detallado al guardar producto:', error);
-            
             let errorMsg = 'Error de conexión. Verifica tu señal de internet.';
-            
             if (error.message?.includes('Failed to fetch') || error.message?.includes('NetworkError')) {
                 errorMsg = 'Sin conexión a internet o la señal es muy débil. Intenta con Wi-Fi.';
             } else if (error.message?.includes('504') || error.message?.includes('timeout')) {
@@ -254,12 +248,12 @@ export default function NuevoProductoPage() {
             } else if (error.message?.includes('413')) {
                 errorMsg = 'La imagen es demasiado pesada para la red móvil. Usa una de menos de 2MB.';
             } else if (error.message) {
-                errorMsg = error.message; // Muestra el error real que venga del backend
+                errorMsg = error.message;
             }
 
             toast.error(errorMsg, { 
                 style: { background: '#FFF1F2', color: '#BE185D', border: '1px solid #FECDD3' },
-                autoClose: 6000 // 6 segundos para que alcance a leerlo en el celular
+                autoClose: 6000
             });
         } finally {
             setSubmitting(false);
@@ -281,10 +275,12 @@ export default function NuevoProductoPage() {
         );
     }
 
+    // Obtener subcategorías sugeridas basadas en la categoría escrita
+    const subcategoriasSugeridas = mapeoSubcategorias[categoria] || [];
+
     return (
         <div className="relative min-h-screen bg-gradient-to-br from-rose-50/50 via-[#FFFBF7] to-amber-50/30 p-4 sm:p-8">
-            {/* ✅ CORREGIDO: mt-8 sm:mt-12 en lugar de mt-50 para evitar espacio vacío gigante */}
-            <div className="max-w-6xl mx-auto mt-52 sm:mt-52">
+            <div className="max-w-6xl mx-auto mt-50 sm:mt-52">
                 <div className="mb-8">
                     <a href="/gestion/productos" className="inline-flex items-center gap-1.5 text-rose-600 hover:text-rose-700 transition-colors">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -292,14 +288,12 @@ export default function NuevoProductoPage() {
                         </svg>
                         Volver
                     </a>
-
                     <h1 className="text-3xl sm:text-4xl font-serif font-medium text-stone-800 mb-2">Nuevo Producto</h1>
                     <p className="text-stone-500 font-light">Calcula el costo real de tus materiales y tiempo para fijar el precio perfecto.</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-2 space-y-6">
-                        {/* Card: Datos Básicos */}
                         <div className="bg-white/80 backdrop-blur-xl rounded-[2rem] p-6 sm:p-8 border border-rose-100 shadow-[0_8px_30px_rgb(253,164,175,0.15)]">
                             <h2 className="text-lg font-serif font-medium text-stone-800 mb-6 flex items-center gap-2"><Icons.Sparkles /> Información del Producto</h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -312,29 +306,53 @@ export default function NuevoProductoPage() {
                                     <textarea value={descripcion} onChange={e => setDescripcion(e.target.value)} required rows={3} className="w-full px-4 py-3.5 rounded-2xl bg-rose-50/50 border border-rose-200 text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-300 transition-all resize-none" placeholder="Detalles del producto..." />
                                 </div>
                                 
+                                {/* ✅ CATEGORÍA: Muestra las antiguas y nuevas, pero permite escribir una nueva */}
                                 <div>
-                                    <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-2 ml-1">Categoría</label>
+                                    <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-2 ml-1">Categoría *</label>
                                     <input 
-                                        list="categorias-sugeridas"
+                                        list="lista-categorias"
                                         value={categoria} 
-                                        onChange={e => setCategoria(e.target.value)} 
+                                        onChange={e => {
+                                            setCategoria(e.target.value);
+                                            setSubcategoria(''); // Limpiar subcategoría al cambiar de categoría
+                                        }} 
                                         required
                                         className="w-full px-4 py-3.5 rounded-2xl bg-rose-50/50 border border-rose-200 text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-300 transition-all"
-                                        placeholder="Ej: Tazas, Remeras, o escribe una nueva..."
+                                        placeholder="Escribe o selecciona una categoría..."
                                     />
-                                    <datalist id="categorias-sugeridas">
-                                        <option value="Sublimación" />
-                                        <option value="Remeras Personalizadas" />
-                                        <option value="Decoración Cumpleaños" />
-                                        <option value="Tazas & Mugs" />
-                                        <option value="Accesorios" />
+                                    <datalist id="lista-categorias">
+                                        {categoriasPrincipales.map((cat, index) => (
+                                            <option key={index} value={cat} />
+                                        ))}
                                     </datalist>
                                     <p className="text-[10px] text-stone-400 mt-1.5 ml-1 flex items-center gap-1">
-                                        <span>💡</span> Selecciona una de la lista o escribe una nueva categoría.
+                                        <span>💡</span> Selecciona una existente o escribe una nueva.
+                                    </p>
+                                </div>
+
+                                {/* ✅ SUBCATEGORÍA: Se filtra según la categoría elegida, pero permite escribir una nueva */}
+                                <div>
+                                    <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-2 ml-1">Subcategoría (Opcional)</label>
+                                    <input 
+                                        list="lista-subcategorias"
+                                        type="text"
+                                        value={subcategoria} 
+                                        onChange={e => setSubcategoria(e.target.value)} 
+                                        disabled={!categoria}
+                                        className="w-full px-4 py-3.5 rounded-2xl bg-rose-50/50 border border-rose-200 text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                        placeholder="Ej: Collar de piedra, Taza 11oz..."
+                                    />
+                                    <datalist id="lista-subcategorias">
+                                        {subcategoriasSugeridas.map((sub, index) => (
+                                            <option key={index} value={sub} />
+                                        ))}
+                                    </datalist>
+                                    <p className="text-[10px] text-stone-400 mt-1.5 ml-1 flex items-center gap-1">
+                                        <span>💡</span> Selecciona una existente o escribe una nueva para esta categoría.
                                     </p>
                                 </div>
                                 
-                                <div>
+                                <div className="sm:col-span-2">
                                     <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-2 ml-1">Imagen del Producto</label>
                                     <div className="relative">
                                         <input type="file" id="imageUpload" accept="image/*" onChange={handleImageChange} className="hidden" />
@@ -355,11 +373,9 @@ export default function NuevoProductoPage() {
                             )}
                         </div>
 
-                        {/* Card: Receta de Insumos */}
+                        {/* Card: Receta de Insumos (Sin cambios) */}
                         <div className="bg-white/80 backdrop-blur-xl rounded-[2rem] p-6 sm:p-8 border border-rose-100 shadow-[0_8px_30px_rgb(253,164,175,0.15)]">
                             <h2 className="text-lg font-serif font-medium text-stone-800 mb-6 flex items-center gap-2">🎨 Receta de Materiales</h2>
-                            
-                            {/* 🔍 BUSCADOR PREMIUM DE INSUMOS */}
                             <div className="flex flex-col sm:flex-row gap-3 mb-6 p-4 rounded-2xl bg-rose-50/50 border border-rose-100">
                                 <div className="relative flex-1" ref={dropdownRef}>
                                     <div className="relative">
@@ -369,68 +385,37 @@ export default function NuevoProductoPage() {
                                         <input
                                             type="text"
                                             value={searchTerm}
-                                            onChange={(e) => {
-                                                setSearchTerm(e.target.value);
-                                                setSelectedInsumoId('');
-                                                setIsDropdownOpen(true);
-                                            }}
+                                            onChange={(e) => { setSearchTerm(e.target.value); setSelectedInsumoId(''); setIsDropdownOpen(true); }}
                                             onFocus={() => setIsDropdownOpen(true)}
                                             placeholder="Buscar insumo por nombre..."
                                             className="w-full pl-10 pr-10 py-3 rounded-xl bg-white border border-rose-200 text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-300 transition-all"
                                         />
                                         {searchTerm && (
-                                            <button
-                                                type="button"
-                                                onClick={() => { setSearchTerm(''); setSelectedInsumoId(''); }}
-                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-rose-500 transition-colors"
-                                            >
+                                            <button type="button" onClick={() => { setSearchTerm(''); setSelectedInsumoId(''); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-rose-500 transition-colors">
                                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                                             </button>
                                         )}
                                     </div>
-
-                                    {/* Dropdown de resultados */}
                                     {isDropdownOpen && (
                                         <div className="absolute z-50 w-full mt-2 bg-white rounded-xl border border-rose-100 shadow-[0_8px_30px_rgb(0,0,0,0.12)] max-h-64 overflow-y-auto">
                                             {filteredInsumos.length === 0 ? (
                                                 <div className="p-4 text-center text-stone-400 text-sm">No se encontraron insumos</div>
                                             ) : (
                                                 filteredInsumos.map((insumo) => (
-                                                    <button
-                                                        key={insumo._id}
-                                                        type="button"
-                                                        onClick={() => handleSelectInsumo(insumo)}
-                                                        className="w-full text-left px-4 py-3 hover:bg-rose-50 transition-colors border-b border-rose-50 last:border-0 flex flex-col gap-1 group"
-                                                    >
+                                                    <button key={insumo._id} type="button" onClick={() => handleSelectInsumo(insumo)} className="w-full text-left px-4 py-3 hover:bg-rose-50 transition-colors border-b border-rose-50 last:border-0 flex flex-col gap-1 group">
                                                         <span className="font-medium text-stone-800 group-hover:text-rose-700">{insumo.nombre}</span>
-                                                        <span className="text-xs text-stone-500">
-                                                            {formatPrice(insumo.costo)} / {insumo.cantidadPaquete} {insumo.unidadMedida}
-                                                        </span>
+                                                        <span className="text-xs text-stone-500">{formatPrice(insumo.costo)} / {insumo.cantidadPaquete} {insumo.unidadMedida}</span>
                                                     </button>
                                                 ))
                                             )}
                                         </div>
                                     )}
                                 </div>
-
-                                <input 
-                                    type="number" 
-                                    step="0.01" 
-                                    value={cantidadInsumo} 
-                                    onChange={e => setCantidadInsumo(e.target.value ? Number(e.target.value) : '')} 
-                                    className="w-full sm:w-32 px-4 py-3 rounded-xl bg-white border border-rose-200 text-stone-800 focus:outline-none focus:ring-2 focus:ring-pink-200 placeholder-stone-400" 
-                                    placeholder="Cant." 
-                                />
-                                <button 
-                                    type="button" 
-                                    onClick={agregarInsumo} 
-                                    disabled={!selectedInsumoId || !cantidadInsumo} 
-                                    className="px-6 py-3 rounded-xl bg-gradient-to-r from-rose-400 to-pink-500 text-white font-bold shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                                >
+                                <input type="number" step="0.01" value={cantidadInsumo} onChange={e => setCantidadInsumo(e.target.value ? Number(e.target.value) : '')} className="w-full sm:w-32 px-4 py-3 rounded-xl bg-white border border-rose-200 text-stone-800 focus:outline-none focus:ring-2 focus:ring-pink-200 placeholder-stone-400" placeholder="Cant." />
+                                <button type="button" onClick={agregarInsumo} disabled={!selectedInsumoId || !cantidadInsumo} className="px-6 py-3 rounded-xl bg-gradient-to-r from-rose-400 to-pink-500 text-white font-bold shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                                     <Icons.Plus /> Agregar
                                 </button>
                             </div>
-
                             <div className="space-y-3">
                                 {insumosSeleccionados.length === 0 ? (
                                     <p className="text-center text-stone-400 py-6 italic text-sm">Aún no has agregado materiales a este producto.</p>
@@ -451,7 +436,6 @@ export default function NuevoProductoPage() {
                             </div>
                         </div>
 
-                        {/* Card: Mano de Obra */}
                         <div className="bg-white/80 backdrop-blur-xl rounded-[2rem] p-6 sm:p-8 border border-rose-100 shadow-[0_8px_30px_rgb(253,164,175,0.15)]">
                             <h2 className="text-lg font-serif font-medium text-stone-800 mb-6 flex items-center gap-2">⏱️ Tiempo y Mano de Obra</h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -467,7 +451,7 @@ export default function NuevoProductoPage() {
                         </div>
                     </div>
 
-                    {/* COLUMNA DERECHA: CALCULADORA EN VIVO */}
+                    {/* COLUMNA DERECHA: CALCULADORA (Sin cambios) */}
                     <div className="lg:col-span-1">
                         <div className="sticky top-8 space-y-6">
                             <div className="bg-white/90 backdrop-blur-2xl rounded-[2rem] p-6 border border-rose-100 shadow-[0_25px_50px_-12px_rgba(253,164,175,0.3)]">

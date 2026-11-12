@@ -6,9 +6,6 @@ import { useSession } from 'next-auth/react';
 import { FaImage, FaUpload, FaTimes, FaArrowLeft } from 'react-icons/fa';
 import Swal from 'sweetalert2';
 
-// ─────────────────────────────────────────────────────────────
-// 🔹 ICONOS PREMIUM
-// ─────────────────────────────────────────────────────────────
 const Icons = {
     Plus: () => <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>,
     Trash: () => <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>,
@@ -41,7 +38,8 @@ interface ProductoExistente {
     nombre: string;
     descripcion: string;
     categoria: string;
-    insumos: any[]; // Cambiado a any[] para permitir el mapeo flexible desde la BD
+    subcategoria?: string; // 👈 Agregado para evitar errores de TypeScript
+    insumos: any[];
     tiempoManoDeObraMinutos: number;
     valorHoraManoDeObra: number;
     margenGananciaPorcentaje: number;
@@ -61,10 +59,15 @@ export default function EditarProductoPage() {
     const [insumosDisponibles, setInsumosDisponibles] = useState<InsumoDB[]>([]);
     const [producto, setProducto] = useState<ProductoExistente | null>(null);
 
+    // 👇 ESTADOS PARA CATEGORÍAS INTELIGENTES (Igual que en Nuevo Producto)
+    const [categoriasPrincipales, setCategoriasPrincipales] = useState<string[]>([]);
+    const [mapeoSubcategorias, setMapeoSubcategorias] = useState<Record<string, string[]>>({});
+
     // Estado del Producto
     const [nombre, setNombre] = useState('');
     const [descripcion, setDescripcion] = useState('');
     const [categoria, setCategoria] = useState('');
+    const [subcategoria, setSubcategoria] = useState(''); // 👈 NUEVO
     const [destacado, setDestacado] = useState(false);
     const [nuevo, setNuevo] = useState(false);
 
@@ -93,28 +96,25 @@ export default function EditarProductoPage() {
 
         const loadData = async () => {
             try {
-                // 1. Cargar insumos disponibles
-                const insumosRes = await fetch('/api/gestion/insumos', {
-                    headers: { 'Authorization': `Bearer ${session?.user?.token}` }
-                });
+                // 1. Cargar insumos disponibles, producto y categorías en paralelo
+                const [insumosRes, productoRes, categoriasRes] = await Promise.all([
+                    fetch('/api/gestion/insumos', { headers: { 'Authorization': `Bearer ${session?.user?.token}` } }),
+                    fetch(`/api/gestion/productos/${params.id}`, { headers: { 'Authorization': `Bearer ${session?.user?.token}` } }),
+                    fetch('/api/gestion/categorias')
+                ]);
+
                 const insumosData = await insumosRes.json();
                 if (insumosData.success) setInsumosDisponibles(insumosData.insumos);
 
-                // 2. Cargar datos del producto específico
-                const productoRes = await fetch(`/api/gestion/productos/${params.id}`, {
-                    headers: { 'Authorization': `Bearer ${session?.user?.token}` }
-                });
-
-                if (!productoRes.ok) {
-                    throw new Error(`Error del servidor: ${productoRes.status}`);
-                }
+                if (!productoRes.ok) throw new Error(`Error del servidor: ${productoRes.status}`);
 
                 const contentType = productoRes.headers.get("content-type");
                 if (!contentType || !contentType.includes("application/json")) {
-                    throw new Error("La API no devolvió JSON. Revisa que la ruta exista.");
+                    throw new Error("La API no devolvió JSON.");
                 }
 
                 const productoData = await productoRes.json();
+                const categoriasData = await categoriasRes.json();
                 
                 if (productoData.success) {
                     const prod = productoData.producto;
@@ -122,10 +122,11 @@ export default function EditarProductoPage() {
                     setNombre(prod.nombre);
                     setDescripcion(prod.descripcion);
                     setCategoria(prod.categoria);
+                    setSubcategoria(prod.subcategoria || ''); // 👈 Cargar subcategoría existente
+                    
                     setDestacado(prod.destacado || false);
                     setNuevo(prod.nuevo || false);
                     
-                    // ✅ CORRECCIÓN CLAVE: Mapear las propiedades de la BD al formato que espera el formulario
                     const insumosMapeados = (prod.insumos || []).map((ins: any) => ({
                         insumoId: ins.insumoId,
                         nombre: ins.nombre,
@@ -144,12 +145,18 @@ export default function EditarProductoPage() {
                 } else {
                     throw new Error(productoData.message || 'No se encontró el producto');
                 }
+
+                if (categoriasData.success) {
+                    setCategoriasPrincipales(categoriasData.categoriasPrincipales || []);
+                    setMapeoSubcategorias(categoriasData.mapeoSubcategorias || {});
+                }
+
             } catch (error: any) {
                 console.error('Error cargando datos:', error);
                 Swal.fire({
                     icon: 'error',
                     title: 'Error de carga',
-                    text: error.message || 'No se pudo cargar el producto. Verifica que el ID sea correcto.',
+                    text: error.message || 'No se pudo cargar el producto.',
                     confirmButtonColor: '#BE185D'
                 });
                 router.push('/gestion/productos');
@@ -165,7 +172,6 @@ export default function EditarProductoPage() {
     // 🔹 CÁLCULOS EN TIEMPO REAL
     // ─────────────────────────────────────────────────────────────
     const calculos = useMemo(() => {
-        // ✅ Protección: asegurar que subtotal sea un número válido
         const costoInsumos = insumosSeleccionados.reduce((sum, item) => sum + (Number(item.subtotal) || 0), 0);
         const tiempoHoras = (Number(tiempoMinutos) || 0) / 60;
         const costoManoObra = tiempoHoras * (Number(valorHora) || 0);
@@ -208,12 +214,7 @@ export default function EditarProductoPage() {
         const file = e.target.files?.[0];
         if (file) {
             if (file.size > 5 * 1024 * 1024) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Imagen muy pesada',
-                    text: 'La imagen no debe superar los 5MB',
-                    confirmButtonColor: '#BE185D'
-                });
+                Swal.fire({ icon: 'warning', title: 'Imagen muy pesada', text: 'La imagen no debe superar los 5MB', confirmButtonColor: '#BE185D' });
                 return;
             }
             setImageFile(file);
@@ -261,7 +262,8 @@ export default function EditarProductoPage() {
             const payload = {
                 nombre,
                 descripcion,
-                categoria,
+                categoria: categoria.trim(),
+                subcategoria: subcategoria.trim(), // 👈 NUEVO: Se envía la subcategoría
                 insumos: insumosSeleccionados.map(i => ({ insumoId: i.insumoId, cantidadUsada: i.cantidad })),
                 tiempoManoDeObraMinutos: Number(tiempoMinutos),
                 valorHoraManoDeObra: Number(valorHora),
@@ -272,7 +274,8 @@ export default function EditarProductoPage() {
                 nuevo
             };
 
-            const res = await fetch(`/api/gestion/productos?id=${params.id}`, {
+            // ✅ CORREGIDO: URL dinámica correcta para Next.js App Router
+            const res = await fetch(`/api/gestion/productos/${params.id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -316,6 +319,9 @@ export default function EditarProductoPage() {
         return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(amount);
     };
 
+    // Obtener subcategorías sugeridas basadas en la categoría escrita
+    const subcategoriasSugeridas = mapeoSubcategorias[categoria] || [];
+
     if (status === 'loading' || loadingPage) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-rose-50/50 via-[#FFFBF7] to-amber-50/30">
@@ -331,8 +337,8 @@ export default function EditarProductoPage() {
 
     return (
         <div className="relative min-h-screen bg-gradient-to-br from-rose-50/50 via-[#FFFBF7] to-amber-50/30 p-4 sm:p-8">
-            <div className="max-w-6xl mt-50 mx-auto">
-                <div className="mb-8 mt-4 sm:mt-8">
+            <div className="max-w-6xl mx-auto mt-52 sm:mt-52">
+                <div className="mb-8">
                     <button onClick={() => router.back()} className="inline-flex items-center gap-1.5 text-rose-600 hover:text-rose-700 transition-colors mb-4">
                         <FaArrowLeft /> Volver al listado
                     </button>
@@ -355,30 +361,46 @@ export default function EditarProductoPage() {
                                     <textarea value={descripcion} onChange={e => setDescripcion(e.target.value)} required rows={3} className="w-full px-4 py-3.5 rounded-2xl bg-rose-50/50 border border-rose-200 text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-300 transition-all resize-none" />
                                 </div>
                                 
-                                {/* ✅ Input con Datalist para categorías dinámicas */}
+                                {/* ✅ CATEGORÍA Y SUBCATEGORÍA: Idéntico al formulario de Nuevo Producto */}
                                 <div>
-                                    <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-2 ml-1">Categoría</label>
+                                    <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-2 ml-1">Categoría *</label>
                                     <input 
-                                        list="categorias-sugeridas"
+                                        list="lista-categorias-edit"
                                         value={categoria} 
-                                        onChange={e => setCategoria(e.target.value)} 
+                                        onChange={e => {
+                                            setCategoria(e.target.value);
+                                            setSubcategoria(''); // Limpiar subcategoría al cambiar de categoría
+                                        }} 
                                         required
                                         className="w-full px-4 py-3.5 rounded-2xl bg-rose-50/50 border border-rose-200 text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-300 transition-all"
-                                        placeholder="Ej: Tazas, Remeras, o escribe una nueva..."
+                                        placeholder="Escribe o selecciona una categoría..."
                                     />
-                                    <datalist id="categorias-sugeridas">
-                                        <option value="Sublimación" />
-                                        <option value="Remeras Personalizadas" />
-                                        <option value="Decoración Cumpleaños" />
-                                        <option value="Tazas & Mugs" />
-                                        <option value="Accesorios" />
+                                    <datalist id="lista-categorias-edit">
+                                        {categoriasPrincipales.map((cat, index) => (
+                                            <option key={index} value={cat} />
+                                        ))}
                                     </datalist>
-                                    <p className="text-[10px] text-stone-400 mt-1.5 ml-1 flex items-center gap-1">
-                                        <span>💡</span> Selecciona una de la lista o escribe una nueva categoría.
-                                    </p>
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-2 ml-1">Subcategoría (Opcional)</label>
+                                    <input 
+                                        list="lista-subcategorias-edit"
+                                        type="text"
+                                        value={subcategoria} 
+                                        onChange={e => setSubcategoria(e.target.value)} 
+                                        disabled={!categoria}
+                                        className="w-full px-4 py-3.5 rounded-2xl bg-rose-50/50 border border-rose-200 text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                        placeholder="Ej: Collar de piedra, Taza 11oz..."
+                                    />
+                                    <datalist id="lista-subcategorias-edit">
+                                        {subcategoriasSugeridas.map((sub, index) => (
+                                            <option key={index} value={sub} />
+                                        ))}
+                                    </datalist>
                                 </div>
                                 
-                                <div>
+                                <div className="sm:col-span-2">
                                     <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-2 ml-1">Imagen del Producto</label>
                                     <div className="relative">
                                         <input type="file" id="imageUpload" accept="image/*" onChange={handleImageChange} className="hidden" />
