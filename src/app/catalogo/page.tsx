@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { 
-  FaShoppingBag, FaWhatsapp, FaPlus, FaMinus, FaTimes, 
-  FaGem, FaLeaf, FaChevronLeft, FaChevronRight, FaCrown, FaRegStar 
+import {
+  FaShoppingBag, FaWhatsapp, FaPlus, FaMinus, FaTimes,
+  FaGem, FaLeaf, FaChevronLeft, FaChevronRight, FaCrown, FaRegStar
 } from 'react-icons/fa';
 import { siteConfig } from '@/app/lib/config';
 import { useCartStore } from '@/store/useCartStore';
@@ -14,7 +14,7 @@ interface Product {
   descripcion: string;
   categoria: string;
   precioFinal: number;
-  precioMayorista?: number; // 👈 NUEVO CAMPO
+  precioMayorista?: number;
   imagen: string;
   destacado: boolean;
   nuevo: boolean;
@@ -24,7 +24,7 @@ interface Product {
 export default function CatalogoPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   const [filterCategory, setFilterCategory] = useState('todas');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -48,7 +48,7 @@ export default function CatalogoPage() {
         setLoading(false);
       }
     };
-    
+
     fetchProducts();
     const handleVisibilityChange = () => { if (document.visibilityState === 'visible') fetchProducts(); };
     document.addEventListener('visibilitychange', handleVisibilityChange);
@@ -87,8 +87,8 @@ export default function CatalogoPage() {
 
   return (
     <div className="relative min-h-screen bg-[#FAF7F2] text-[#3D2B1F] selection:bg-[#D4B5D4] selection:text-[#3D2B1F] pb-24">
-      <div className="fixed inset-0 pointer-events-none opacity-[0.015]" 
-           style={{backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`}} />
+      <div className="fixed inset-0 pointer-events-none opacity-[0.015]"
+        style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }} />
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 right-0 w-96 h-96 bg-[#D4B5D4]/20 rounded-full blur-[120px]" />
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#C9A961]/10 rounded-full blur-[120px]" />
@@ -111,9 +111,8 @@ export default function CatalogoPage() {
         <div className="flex flex-wrap justify-center gap-3 mb-16">
           {categories.map(cat => (
             <button key={cat} onClick={() => handleCategoryChange(cat)}
-              className={`px-6 py-3 rounded-full text-xs font-semibold uppercase tracking-[0.15em] transition-all duration-500 ${
-                filterCategory === cat ? 'bg-[#3D2B1F] text-[#FAF7F2] shadow-[0_8px_20px_rgba(61,43,31,0.15)]' : 'bg-white text-[#6B5B4F] border border-[#E8DFD0] hover:border-[#C9A961] hover:text-[#3D2B1F]'
-              }`}
+              className={`px-6 py-3 rounded-full text-xs font-semibold uppercase tracking-[0.15em] transition-all duration-500 ${filterCategory === cat ? 'bg-[#3D2B1F] text-[#FAF7F2] shadow-[0_8px_20px_rgba(61,43,31,0.15)]' : 'bg-white text-[#6B5B4F] border border-[#E8DFD0] hover:border-[#C9A961] hover:text-[#3D2B1F]'
+                }`}
             >
               {cat}
             </button>
@@ -129,81 +128,88 @@ export default function CatalogoPage() {
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {products.map((product) => (
-                <div key={product._id} className="group relative bg-white rounded-[2rem] overflow-hidden border border-[#E8DFD0]/60 hover:border-[#D4B5D4]/60 transition-all duration-700 hover:-translate-y-2 hover:shadow-[0_25px_50px_-15px_rgba(139,115,85,0.15)] flex flex-col">
-                  <div className="relative aspect-[4/5] overflow-hidden bg-[#F5EFE6]">
-                    {product.imagen ? (
-                      <img src={product.imagen} alt={product.nombre} className="w-full h-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-105" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-[#D4B5D4]">
-                        <FaGem className="w-16 h-16 opacity-60" />
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#3D2B1F]/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                    
-                    <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
-                      {product.destacado && (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/95 backdrop-blur-md text-[#8B6F47] text-[9px] font-bold uppercase tracking-[0.2em] shadow-sm border border-[#E8DFD0]">
-                          <FaCrown className="w-2.5 h-2.5 text-[#C9A961]" /> Exclusiva
-                        </span>
-                      )}
-                      {product.nuevo && (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#D4B5D4]/20 backdrop-blur-md text-[#3D2B1F] text-[9px] font-bold uppercase tracking-[0.2em] border border-[#D4B5D4]/40">
-                          Nuevo
-                        </span>
-                      )}
-                    </div>
-                    
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); addToCart(product); }}
-                      className="absolute bottom-4 right-4 sm:bottom-5 sm:left-0 sm:right-0 sm:p-5 sm:translate-y-full sm:group-hover:translate-y-0 transition-all duration-500 ease-out z-20"
-                      aria-label="Agregar al carrito"
-                    >
-                      <div className="sm:hidden w-11 h-11 rounded-full bg-[#3D2B1F] text-[#FAF7F2] flex items-center justify-center shadow-lg active:scale-90 transition-transform border border-[#C9A961]/20">
-                        <FaPlus className="w-4 h-4" />
-                      </div>
-                      <div className="hidden sm:flex w-full py-3.5 rounded-xl bg-[#3D2B1F] text-[#FAF7F2] font-medium text-sm tracking-wide hover:bg-[#2A1D14] transition-all duration-500 shadow-lg border border-transparent hover:border-[#C9A961]/30 items-center justify-center gap-2">
-                        <FaPlus className="w-3 h-3" /> Agregar a la Selección
-                      </div>
-                    </button>
-                  </div>
+              {products.map((product) => {
+                // 🔥 BLINDAJE TOTAL: Calculamos el valor numérico y si es válido antes de renderizar
+                const precioMayoristaNum = Number(product.precioMayorista);
+                const mostrarMayorista = !isNaN(precioMayoristaNum) && precioMayoristaNum > 0;
 
-                  <div className="p-6 flex flex-col flex-1">
-                    <p className="text-[#8B6F47] text-[10px] mb-2 uppercase tracking-[0.25em] font-semibold flex items-center gap-1.5">
-                      <span className="w-1 h-1 rounded-full bg-[#C8A2C8]" />
-                      {product.categoria}
-                    </p>
-                    <h3 className="text-[#3D2B1F] font-serif font-medium truncate mb-2 text-lg group-hover:text-[#8B6F47] transition-colors duration-500">
-                      {product.nombre}
-                    </h3>
-                    <p className="text-[#6B5B4F] text-sm mb-4 line-clamp-2 flex-1 font-extralight leading-relaxed">
-                      {product.descripcion}
-                    </p>
-                    
-                    {/* 👈 SECCIÓN DE PRECIOS ACTUALIZADA (UNITARIO + MAYORISTA) */}
-                    <div className="mt-auto pt-4 border-t border-[#E8DFD0]/60 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[#3D2B1F] font-serif font-semibold text-xl tracking-tight">
-                          {formatPrice(product.precioFinal)}
-                        </span>
-                        <span className="text-[9px] uppercase tracking-widest text-[#8B6F47] font-medium">Unitario</span>
-                      </div>
-                      
-                      {product.precioMayorista && product.precioMayorista > 0 && (
-                        <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-[#F5EFE6]/80 border border-[#E8DFD0]">
-                          <div className="flex items-center gap-2">
-                            <FaGem className="w-3 h-3 text-[#C9A961]" />
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#3D2B1F]">Por Mayor</span>
-                          </div>
-                          <span className="text-[#3D2B1F] font-serif font-semibold text-sm">
-                            {formatPrice(product.precioMayorista)}
-                          </span>
+                return (
+                  <div key={product._id} className="group relative bg-white rounded-[2rem] overflow-hidden border border-[#E8DFD0]/60 hover:border-[#D4B5D4]/60 transition-all duration-700 hover:-translate-y-2 hover:shadow-[0_25px_50px_-15px_rgba(139,115,85,0.15)] flex flex-col">
+                    <div className="relative aspect-[4/5] overflow-hidden bg-[#F5EFE6]">
+                      {product.imagen ? (
+                        <img src={product.imagen} alt={product.nombre} className="w-full h-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-105" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-[#D4B5D4]">
+                          <FaGem className="w-16 h-16 opacity-60" />
                         </div>
                       )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#3D2B1F]/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+
+                      <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
+                        {product.destacado && (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/95 backdrop-blur-md text-[#8B6F47] text-[9px] font-bold uppercase tracking-[0.2em] shadow-sm border border-[#E8DFD0]">
+                            <FaCrown className="w-2.5 h-2.5 text-[#C9A961]" /> Exclusiva
+                          </span>
+                        )}
+                        {product.nuevo && (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#D4B5D4]/20 backdrop-blur-md text-[#3D2B1F] text-[9px] font-bold uppercase tracking-[0.2em] border border-[#D4B5D4]/40">
+                            Nuevo
+                          </span>
+                        )}
+                      </div>
+
+                      <button
+                        onClick={(e) => { e.stopPropagation(); addToCart(product); }}
+                        className="absolute bottom-4 right-4 sm:bottom-5 sm:left-0 sm:right-0 sm:p-5 sm:translate-y-full sm:group-hover:translate-y-0 transition-all duration-500 ease-out z-20"
+                        aria-label="Agregar al carrito"
+                      >
+                        <div className="sm:hidden w-11 h-11 rounded-full bg-[#3D2B1F] text-[#FAF7F2] flex items-center justify-center shadow-lg active:scale-90 transition-transform border border-[#C9A961]/20">
+                          <FaPlus className="w-4 h-4" />
+                        </div>
+                        <div className="hidden sm:flex w-full py-3.5 rounded-xl bg-[#3D2B1F] text-[#FAF7F2] font-medium text-sm tracking-wide hover:bg-[#2A1D14] transition-all duration-500 shadow-lg border border-transparent hover:border-[#C9A961]/30 items-center justify-center gap-2">
+                          <FaPlus className="w-3 h-3" /> Agregar a la Selección
+                        </div>
+                      </button>
+                    </div>
+
+                    <div className="p-6 flex flex-col flex-1">
+                      <p className="text-[#8B6F47] text-[10px] mb-2 uppercase tracking-[0.25em] font-semibold flex items-center gap-1.5">
+                        <span className="w-1 h-1 rounded-full bg-[#C8A2C8]" />
+                        {product.categoria}
+                      </p>
+                      <h3 className="text-[#3D2B1F] font-serif font-medium truncate mb-2 text-lg group-hover:text-[#8B6F47] transition-colors duration-500">
+                        {product.nombre}
+                      </h3>
+                      <p className="text-[#6B5B4F] text-sm mb-4 line-clamp-2 flex-1 font-extralight leading-relaxed">
+                        {product.descripcion}
+                      </p>
+
+                      {/* 👈 SECCIÓN DE PRECIOS BLINDADA */}
+                      <div className="mt-auto pt-4 border-t border-[#E8DFD0]/60 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[#3D2B1F] font-serif font-semibold text-xl tracking-tight">
+                            {formatPrice(product.precioFinal)}
+                          </span>
+                          <span className="text-[9px] uppercase tracking-widest text-[#8B6F47] font-medium">Unitario</span>
+                        </div>
+
+                        {/* 🔥 CONDICIÓN INFALIBLE: Solo se renderiza si la variable es estrictamente > 0 */}
+                        {mostrarMayorista && (
+                          <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-[#F5EFE6]/80 border border-[#E8DFD0]">
+                            <div className="flex items-center gap-2">
+                              <FaGem className="w-3 h-3 text-[#C9A961]" />
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-[#3D2B1F]">Por Mayor</span>
+                            </div>
+                            <span className="text-[#3D2B1F] font-serif font-semibold text-sm">
+                              {formatPrice(precioMayoristaNum)}
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {totalPages > 1 && (
@@ -214,9 +220,8 @@ export default function CatalogoPage() {
                 <div className="flex items-center gap-2">
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                     <button key={page} onClick={() => setCurrentPage(page)}
-                      className={`w-10 h-10 rounded-xl font-medium text-sm transition-all duration-500 ${
-                        currentPage === page ? 'bg-[#3D2B1F] text-[#FAF7F2] shadow-[0_8px_20px_rgba(61,43,31,0.15)]' : 'bg-white border border-[#E8DFD0] text-[#6B5B4F] hover:border-[#C9A961] hover:text-[#3D2B1F]'
-                      }`}
+                      className={`w-10 h-10 rounded-xl font-medium text-sm transition-all duration-500 ${currentPage === page ? 'bg-[#3D2B1F] text-[#FAF7F2] shadow-[0_8px_20px_rgba(61,43,31,0.15)]' : 'bg-white border border-[#E8DFD0] text-[#6B5B4F] hover:border-[#C9A961] hover:text-[#3D2B1F]'
+                        }`}
                     >
                       {page}
                     </button>
