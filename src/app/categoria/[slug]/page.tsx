@@ -71,9 +71,10 @@ export default function CategoriaPage() {
 
   const decodedSlug = decodeURIComponent(slug);
   const categoriaNombre = decodedSlug
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+    .replace(/-/g, ' ') // 👈 1. Reemplaza TODOS los guiones (-) por espacios
+    .split(' ')         // 👈 2. Ahora sí separa por los espacios creados
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()) // 👈 3. Capitaliza la primera letra y normaliza el resto
+    .join(' ');         // 👈 4. Une todo con espacios
 
   if (loading) {
     return (
